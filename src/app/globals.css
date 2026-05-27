@@ -17,6 +17,18 @@
   --animate-spin-slow: spin 20s linear infinite;
   --animate-spin-reverse: spin-reverse 25s linear infinite;
 
+  --color-zinc-50: var(--zinc-50);
+  --color-zinc-100: var(--zinc-100);
+  --color-zinc-200: var(--zinc-200);
+  --color-zinc-300: var(--zinc-300);
+  --color-zinc-400: var(--zinc-400);
+  --color-zinc-500: var(--zinc-500);
+  --color-zinc-600: var(--zinc-600);
+  --color-zinc-700: var(--zinc-700);
+  --color-zinc-800: var(--zinc-800);
+  --color-zinc-900: var(--zinc-900);
+  --color-zinc-950: var(--zinc-950);
+
   @keyframes pulse-gold {
     0%, 100% {
       opacity: 1;
@@ -41,6 +53,18 @@
 :root {
   --background: #080808;
   --foreground: #F5F5F7;
+
+  --zinc-50: #fafafa;
+  --zinc-100: #f4f4f5;
+  --zinc-200: #e4e4e7;
+  --zinc-300: #d4d4d8;
+  --zinc-400: #a1a1aa;
+  --zinc-500: #71717a;
+  --zinc-600: #52525b;
+  --zinc-700: #3f3f46;
+  --zinc-800: #27272a;
+  --zinc-900: #18181b;
+  --zinc-950: #09090b;
 }
 
 body {
@@ -108,3 +132,210 @@ h1, h2, h3, h4, h5, h6 {
 .scrollbar-none::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+/* Light mode theme definition & overrides */
+.light {
+  --background: #fafafa;
+  --foreground: #000000;
+
+  --zinc-50: #000000;
+  --zinc-100: #111111;
+  --zinc-200: #1c1c1e;
+  --zinc-300: #2c2c2e;
+  --zinc-400: #48484a;
+  --zinc-500: #636366;
+  --zinc-600: #8e8e93;
+  --zinc-700: #aeaeb2;
+  --zinc-800: #d1d1d6;
+  --zinc-900: #e5e5ea;
+  --zinc-950: #f2f2f7;
+}
+
+/* Light Mode Core Typography Enhancements */
+.light body {
+  font-weight: 500 !important; /* Slightly bolder main text for better contrast */
+  color: #000000 !important;
+}
+
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6 {
+  font-weight: 700 !important; /* Bold headings */
+  color: #000000 !important;   /* Pure dark black color */
+}
+
+/* Overrides for arbitrary background color utilities under light mode */
+.light .bg-\[\#080808\],
+.light .bg-\[\#080808\]\/80,
+.light .bg-\[\#080808\]\/55 {
+  background-color: #fafafa !important;
+}
+
+.light .bg-\[\#0A0A0A\],
+.light .bg-\[\#0A0A0A\]\/80 {
+  background-color: #f4f4f5 !important;
+}
+
+.light .bg-\[\#070707\],
+.light .bg-\[\#070707\]\/90 {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.light .bg-\[\#0B0B0B\],
+.light .bg-\[\#0B0B0B\]\/90 {
+  background-color: #eaeaea !important;
+}
+
+.light .bg-\[\#0E0E0E\],
+.light .bg-\[\#0E0E0E\]\/95 {
+  background-color: #ffffff !important;
+  border-color: #e5e5ea !important;
+}
+
+.light .bg-\[\#0D0D0D\] {
+  background-color: #ffffff !important;
+}
+
+.light .bg-\[\#040404\] {
+  background-color: #f4f4f5 !important;
+}
+
+.light .bg-\[\#060606\] {
+  background-color: #eaeaea !important;
+}
+
+.light .bg-\[\#030303\] {
+  background-color: #eaeaea !important;
+}
+
+.light .bg-\[\#090909\] {
+  background-color: #ffffff !important;
+}
+
+.light .bg-\[\#0C0C0C\] {
+  background-color: #f4f4f5 !important;
+}
+
+/* Specific overrides for text colors on light backgrounds (restricted to non-hover state) */
+.light .text-white:not(:hover) {
+  color: #000000 !important;
+}
+
+/* Retain white text inside dark backgrounds/overlays */
+.light .bg-black .text-white:not(:hover),
+.light .bg-black\/30 .text-white:not(:hover),
+.light .bg-black\/45 .text-white:not(:hover),
+.light .bg-black\/60 .text-white:not(:hover),
+.light .bg-black\/75 .text-white:not(:hover),
+.light .bg-black\/80 .text-white:not(:hover),
+.light .bg-black\/85 .text-white:not(:hover),
+.light .bg-black\/95 .text-white:not(:hover),
+.light .bg-red-952\/75 .text-white:not(:hover),
+.light .bg-primary-gold\/10 .text-white:not(:hover) {
+  color: #ffffff !important;
+}
+
+.light .text-zinc-400:not(:hover) {
+  color: #48484a !important;
+}
+
+.light .text-zinc-300:not(:hover) {
+  color: #1c1c1e !important;
+}
+
+.light .text-zinc-200:not(:hover) {
+  color: #111111 !important;
+}
+
+.light .text-zinc-500:not(:hover) {
+  color: #636366 !important;
+}
+
+.light .text-zinc-455:not(:hover),
+.light .text-zinc-450:not(:hover) {
+  color: #48484a !important;
+}
+
+.light .text-zinc-555:not(:hover), 
+.light .text-zinc-550:not(:hover) {
+  color: #48484a !important;
+}
+
+.light .text-gray-400:not(:hover) {
+  color: #636366 !important;
+}
+
+.light .text-gray-500:not(:hover) {
+  color: #48484a !important;
+}
+
+/* Link and interactive hover classes */
+.light .hover\:text-white:hover {
+  color: #000000 !important;
+}
+
+/* Retain white hover color inside dark overlays */
+.light .bg-black\/60 .hover\:text-white:hover,
+.light .bg-black\/75 .hover\:text-white:hover,
+.light .bg-black\/85 .hover\:text-white:hover,
+.light .bg-black\/95 .hover\:text-white:hover,
+.light .bg-black .hover\:text-white:hover {
+  color: #ffffff !important;
+}
+
+/* Border color mappings */
+.light .border-zinc-900 {
+  border-color: #e5e5ea !important;
+}
+.light .border-zinc-800 {
+  border-color: #e5e5ea !important;
+}
+.light .border-zinc-950 {
+  border-color: #e5e5ea !important;
+}
+.light .border-zinc-850 {
+  border-color: #d1d1d6 !important;
+}
+.light .border-zinc-700 {
+  border-color: #d1d1d6 !important;
+}
+
+/* Custom scrollbar override for light mode */
+.light ::-webkit-scrollbar-track {
+  background: #fafafa !important;
+}
+.light ::-webkit-scrollbar-thumb {
+  background: #e5e5ea !important;
+  border: 2px solid #fafafa !important;
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #D4AF37 !important;
+}
+
+/* Glassmorphism overrides for light mode */
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.light .glass-panel-gold {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Prevent light mode overrides for specifically dark sections (like Hero Section) */
+.light .dark-section .text-white,
+.light .dark-section h2,
+.light .dark-section a.text-white {
+  color: #ffffff !important;
+}
+.light .dark-section p,
+.light .dark-section .text-zinc-400 {
+  color: #a1a1aa !important;
+}
+
+

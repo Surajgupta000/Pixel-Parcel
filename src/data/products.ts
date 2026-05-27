@@ -43,6 +43,11 @@ export interface WatchProduct {
   caseLength?: string;
   caseWidth?: string;
   images?: string[];
+
+  // Categorization & Promotion Settings
+  style?: 'Casual' | 'Formal' | 'Digital' | 'Smart' | string;
+  isNewArrival?: boolean;
+  isSummerSale?: boolean;
 }
 
 export const products: WatchProduct[] = [
@@ -73,7 +78,11 @@ export const products: WatchProduct[] = [
       { id: "r1", name: "Aravind Sharma", rating: 5, text: "An absolute masterpiece. The weight of the 18k gold on the wrist is substantial yet comfortable. The movement sweeps beautifully.", date: "2026-04-12", verified: true },
       { id: "r2", name: "Helena Rostova", rating: 5, text: "Understated luxury. The opaline cream dial is gorgeous in daylight. Truly where time meets trust.", date: "2026-05-01", verified: true },
       { id: "r3", name: "Vikram Seth", rating: 4, text: "Stunning timepiece. Power reserve is excellent, holds time perfectly. Packaging was immaculate.", date: "2026-05-18", verified: true }
-    ]
+    ],
+    gender: "Guys",
+    style: "Formal",
+    isNewArrival: true,
+    isSummerSale: true
   },
   {
     id: "quantum-stealth",
@@ -101,7 +110,11 @@ export const products: WatchProduct[] = [
     reviews: [
       { id: "r4", name: "Rohan Das", rating: 5, text: "The skeleton dial is mesmerizing. The titanium makes it incredibly light despite the 42mm size. The rubber strap is high quality.", date: "2026-02-28", verified: true },
       { id: "r5", name: "Marcus Aurelius", rating: 4, text: "Excellent daily sports watch. Rugged, scratches don't show easily on the titanium. Keeps precise time.", date: "2026-03-15", verified: true }
-    ]
+    ],
+    gender: "Guys",
+    style: "Casual",
+    isNewArrival: false,
+    isSummerSale: true
   },
   {
     id: "vanguard-classic",
@@ -129,7 +142,11 @@ export const products: WatchProduct[] = [
     reviews: [
       { id: "r6", name: "Kabir Mehta", rating: 5, text: "The green sunburst dial is unbelievable. Looks much more expensive than it is. Fits perfectly on a 6.5 inch wrist.", date: "2026-04-20", verified: true },
       { id: "r7", name: "Sarah Jenkins", rating: 5, text: "My first luxury automatic watch and I couldn't be happier. Elegant, versatile, goes with a suit or a t-shirt.", date: "2026-05-10", verified: true }
-    ]
+    ],
+    gender: "Guys",
+    style: "Formal",
+    isNewArrival: true,
+    isSummerSale: false
   },
   {
     id: "onyx-spectre",
@@ -157,7 +174,11 @@ export const products: WatchProduct[] = [
     reviews: [
       { id: "r8", name: "David Miller", rating: 4, text: "Very cool stealth look. The lume is extremely bright. The black DLC coating is holding up perfectly against scratches.", date: "2026-03-10", verified: true },
       { id: "r9", name: "Sameer Verma", rating: 5, text: "A rugged luxury watch. The screw-down crown feels solid. Love the matte black bracelet.", date: "2026-04-05", verified: true }
-    ]
+    ],
+    gender: "Unisex",
+    style: "Casual",
+    isNewArrival: true,
+    isSummerSale: false
   },
   {
     id: "celestial-eclipse",
@@ -185,7 +206,11 @@ export const products: WatchProduct[] = [
     reviews: [
       { id: "r10", name: "Jean-Pierre", rating: 5, text: "Simply breathtaking. The aventurine dial looks like a galaxy. A true collector's item.", date: "2026-01-15", verified: true },
       { id: "r11", name: "Priya Nair", rating: 5, text: "The moonphase complication is fluid and accurate. The 18k rose gold is soft and warm. Best watch in my collection.", date: "2026-03-22", verified: true }
-    ]
+    ],
+    gender: "Ladies",
+    style: "Formal",
+    isNewArrival: false,
+    isSummerSale: true
   },
   {
     id: "apex-mariner",
@@ -213,7 +238,11 @@ export const products: WatchProduct[] = [
     reviews: [
       { id: "r12", name: "Christian Vance", rating: 5, text: "Excellent dive watch. The titanium band feels premium and light. Ceramic bezel click action is crisp and alignment is perfect.", date: "2026-03-30", verified: true },
       { id: "r13", name: "Aditya Roy", rating: 4, text: "Incredibly tough. I've taken it diving twice, holds up perfectly. Highly recommended for watch purists.", date: "2026-05-05", verified: true }
-    ]
+    ],
+    gender: "Guys",
+    style: "Casual",
+    isNewArrival: true,
+    isSummerSale: true
   },
   {
     id: "aero-tourbillon",
@@ -241,7 +270,11 @@ export const products: WatchProduct[] = [
     reviews: [
       { id: "r14", name: "Sir Richard", rating: 5, text: "A masterpiece of watchmaking. The flying tourbillon is hypnotizing to watch. Exceptional quality from Pixel & Parcel.", date: "2026-04-10", verified: true },
       { id: "r15", name: "Mei-Ling Chen", rating: 5, text: "The finishings on the bridges and plates are exquisite. Platinum weight is substantial. Beautifully presented in a piano wood box.", date: "2026-05-15", verified: true }
-    ]
+    ],
+    gender: "Guys",
+    style: "Formal",
+    isNewArrival: true,
+    isSummerSale: false
   },
   {
     id: "nomad-gmt",
@@ -269,7 +302,11 @@ export const products: WatchProduct[] = [
     reviews: [
       { id: "r16", name: "Aman Gupta", rating: 4, text: "Perfect travel companion. Extremely thin and lightweight. The dual time zone is easy to set.", date: "2026-02-15", verified: true },
       { id: "r17", name: "Sophia Martinez", rating: 5, text: "Simple, accurate, and very stylish. The burgundy strap gets a lot of compliments. Outstanding build quality.", date: "2026-03-25", verified: true }
-    ]
+    ],
+    gender: "Unisex",
+    style: "Casual",
+    isNewArrival: false,
+    isSummerSale: true
   },
   {
     id: "nt3099sl01",
@@ -295,14 +332,7 @@ export const products: WatchProduct[] = [
     rating: 4.8,
     reviewsCount: 1,
     reviews: [
-      {
-        id: "ft-rev-1",
-        name: "Suraj",
-        rating: 5,
-        text: "Extremely robust and premium feel. Perfect daily wear.",
-        date: "2026-05-26",
-        verified: true
-      }
+      { id: "ft-rev-1", name: "Suraj", rating: 5, text: "Extremely robust and premium feel. Perfect daily wear.", date: "2026-05-26", verified: true }
     ],
     displayBrand: "Fastrack",
     gender: "Guys",
@@ -317,7 +347,102 @@ export const products: WatchProduct[] = [
       "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?q=80&w=1000",
       "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1000",
       "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?q=80&w=1000"
-    ]
+    ],
+    style: "Casual",
+    isNewArrival: false,
+    isSummerSale: false
+  },
+  
+  // 3 PREMIUM MOCK SMARTWATCHES FOR ALL SECTIONS
+  {
+    id: "stealth-pulse",
+    name: "Stealth Pulse Smartwatch",
+    tagline: "Rugged Grade-5 Titanium connected caliper",
+    price: 45000,
+    movement: "Quartz",
+    caliber: "Caliber PP-S101",
+    caseMaterial: "Titanium",
+    strapMaterial: "Rubber",
+    strapDetails: "Sandblasted black rubber strap with titanium buckle",
+    waterResistance: "50m (5 ATM)",
+    dialColor: "Onyx Black",
+    caseDiameter: "43mm",
+    thickness: "11.5mm",
+    powerReserve: "5 Days (AMOLED Screen)",
+    jewels: 0,
+    imageUrl: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?q=80&w=1000",
+    localImage: "",
+    sku: "PP-SP-S101",
+    stock: 6,
+    description: "Designed for rugged elegance. Made from sandblasted Grade 5 titanium, featuring a high-resolution AMOLED display with a mechanical balance wheel ticking graphic screen simulator.",
+    rating: 4.8,
+    reviewsCount: 3,
+    reviews: [],
+    displayBrand: "Pixel & Parcel",
+    gender: "Guys",
+    style: "Smart",
+    isNewArrival: true,
+    isSummerSale: true
+  },
+  {
+    id: "aura-rose",
+    name: "Aura Rose Smartwatch",
+    tagline: "Elegant rose gold connected timepiece",
+    price: 55000,
+    movement: "Quartz",
+    caliber: "Caliber PP-S102",
+    caseMaterial: "18K Gold",
+    strapMaterial: "Leather",
+    strapDetails: "Sleek midnight blue Italian leather strap",
+    waterResistance: "30m (3 ATM)",
+    dialColor: "Midnight Aventurine",
+    caseDiameter: "39mm",
+    thickness: "10.5mm",
+    powerReserve: "4 Days (AOD Mode)",
+    jewels: 0,
+    imageUrl: "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?q=80&w=1000",
+    localImage: "",
+    sku: "PP-AR-S102",
+    stock: 4,
+    description: "A luxury connected timepiece encased in 18K rose gold. Adorned with a custom aventurine watchface, heart rate monitor, sleep tracking, and a premium leather strap.",
+    rating: 4.9,
+    reviewsCount: 5,
+    reviews: [],
+    displayBrand: "Pixel & Parcel",
+    gender: "Ladies",
+    style: "Smart",
+    isNewArrival: true,
+    isSummerSale: false
+  },
+  {
+    id: "quantum-smart",
+    name: "Quantum Digital Smartwatch",
+    tagline: "Digital mechanical simulation connected",
+    price: 95000,
+    movement: "Quartz",
+    caliber: "Caliber PP-S100",
+    caseMaterial: "Titanium",
+    strapMaterial: "Rubber",
+    strapDetails: "Comfort black rubber strap with folding clasp",
+    waterResistance: "50m (5 ATM)",
+    dialColor: "Onyx Black",
+    caseDiameter: "42mm",
+    thickness: "11.0mm",
+    powerReserve: "7 Days (Rechargeable)",
+    jewels: 0,
+    imageUrl: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?q=80&w=1000",
+    localImage: "",
+    sku: "PP-QS-S100",
+    stock: 8,
+    description: "Connected digital horology with a sandblasted titanium case, tactile push buttons, and a textured rubber strap. Seamless luxury smart notifications combined with physical casing.",
+    rating: 4.8,
+    reviewsCount: 2,
+    reviews: [],
+    displayBrand: "Pixel & Parcel",
+    gender: "Unisex",
+    style: "Digital",
+    isNewArrival: true,
+    isSummerSale: true
   }
 ];
 

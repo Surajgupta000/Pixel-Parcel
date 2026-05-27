@@ -1,17 +1,29 @@
 "use client";
 
 import { useStore } from "@/store/useStore";
-import { ShoppingBag, Heart, ArrowLeftRight, Volume2, VolumeX, Menu, X } from "lucide-react";
+import { ShoppingBag, Heart, ArrowLeftRight, Volume2, VolumeX, Menu, X, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
 export default function Navbar() {
-  const { cart, wishlist, compareList, isSoundEnabled, toggleSound, setCartOpen } = useStore();
+  const { cart, wishlist, compareList, isSoundEnabled, toggleSound, setCartOpen, theme, toggleTheme } = useStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Initialize theme state from localStorage
+    const savedTheme = localStorage.getItem('pp_theme');
+    if (savedTheme) {
+      try {
+        const parsed = JSON.parse(savedTheme);
+        if (parsed === 'light' || parsed === 'dark') {
+          useStore.setState({ theme: parsed });
+        }
+      } catch (e) {
+        console.error("Error restoring theme on mount", e);
+      }
+    }
   }, []);
 
   // Total quantity in cart
@@ -19,113 +31,133 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-[#080808]/80 backdrop-blur-md border-b border-zinc-900 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col gap-3 items-center">
         
-        {/* Brand Logo & Tagline */}
-        <Link href="/" className="flex flex-col group select-none">
-          <span className="text-xl sm:text-2xl font-serif tracking-[0.2em] uppercase text-white transition-all duration-500 group-hover:text-primary-gold">
-            Pixel & Parcel
-          </span>
-          <span className="text-[9px] uppercase tracking-[0.3em] text-[#8C7853] mt-0.5 font-sans">
-            Where time meets trust
-          </span>
-        </Link>
+        {/* Row 1: Centered Brand Logo */}
+        <div className="flex justify-center w-full">
+          <Link href="/" className="flex flex-col items-center group select-none text-center">
+            <span className="text-2xl sm:text-3xl font-serif font-bold tracking-[0.25em] uppercase text-white transition-all duration-500 group-hover:text-primary-gold">
+              Pixel & Parcel
+            </span>
+            <span className="text-[9px] uppercase tracking-[0.3em] text-[#8C7853] mt-1 font-sans font-semibold">
+              Where time meets trust
+            </span>
+          </Link>
+        </div>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-zinc-400">
-          <Link href="/" className="hover:text-white hover:underline decoration-primary-gold underline-offset-4 transition-colors">
-            Home
-          </Link>
-          <Link href="/shop" className="hover:text-white hover:underline decoration-primary-gold underline-offset-4 transition-colors">
-            Collections
-          </Link>
-          <Link href="/trust" className="hover:text-white hover:underline decoration-primary-gold underline-offset-4 transition-colors">
-            Authenticity
-          </Link>
-          <Link href="/about" className="hover:text-white hover:underline decoration-primary-gold underline-offset-4 transition-colors">
-            About Us
-          </Link>
-          {/*
-          <Link href="/admin" className="text-zinc-600 hover:text-zinc-400 transition-colors">
-            Dashboard
-          </Link>
-          */}
-        </nav>
-
-        {/* Action Icons Panel */}
-        <div className="flex items-center gap-3 sm:gap-5">
-          {/* Sound Toggle (watch heartbeat simulator) */}
-          <button 
-            onClick={toggleSound}
-            className={`p-2 rounded-full border transition-all duration-500 flex items-center justify-center relative group ${
-              mounted && isSoundEnabled 
-                ? "border-primary-gold/45 bg-primary-gold/5 text-primary-gold animate-pulse-gold" 
-                : "border-zinc-800 text-zinc-550 hover:border-zinc-700"
-            }`}
-            title={mounted && isSoundEnabled ? "Mute Mechanical Tick" : "Listen to Mechanical Tick"}
-            aria-label="Toggle mechanical ticking sound"
-          >
-            {mounted && isSoundEnabled ? (
-              <>
-                <Volume2 className="h-4 w-4" />
-                {/* Visual ticking wheel */}
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary-gold animate-ping" />
-              </>
-            ) : (
-              <VolumeX className="h-4 w-4" />
-            )}
-          </button>
-
-          {/* Wishlist Link */}
-          <Link 
-            href="/shop?filter=wishlist" 
-            className="p-2 text-zinc-400 hover:text-white relative transition-colors"
-            title="Wishlist"
-          >
-            <Heart className="h-4 w-4" />
-            {mounted && wishlist.length > 0 && (
-              <span className="absolute top-0 right-0 bg-primary-gold text-black font-sans text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-zinc-950">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
-
-          {/* Compare Counter */}
-          {mounted && compareList.length > 0 && (
-            <div 
-              className="p-2 text-primary-gold relative flex items-center justify-center border border-primary-gold/20 bg-primary-gold/5 rounded-full"
-              title="Compare Drawer Active"
+        {/* Row 2: Navigation Links & Actions */}
+        <div className="w-full flex items-center justify-between border-t border-zinc-900/60 pt-2.5">
+          
+          {/* Left spacer for desktop symmetry, or mobile menu button */}
+          <div className="md:w-1/4 flex items-center">
+            {/* Mobile Menu Icon */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors"
+              aria-label="Toggle navigation menu"
             >
-              <ArrowLeftRight className="h-4 w-4" />
-              <span className="absolute -top-1 -right-1 bg-white text-black font-sans text-[8px] font-extrabold h-3.5 w-3.5 rounded-full flex items-center justify-center border border-zinc-950">
-                {compareList.length}
-              </span>
-            </div>
-          )}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
 
-          {/* Cart Bag Trigger */}
-          <button 
-            onClick={() => setCartOpen(true)}
-            className="p-2 text-zinc-400 hover:text-white relative transition-colors"
-            title="Open Vault"
-            aria-label="Open shopping cart"
-          >
-            <ShoppingBag className="h-4 w-4" />
-            {mounted && cartItemsCount > 0 && (
-              <span className="absolute top-0 right-0 bg-primary-gold text-black font-sans text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-zinc-950">
-                {cartItemsCount}
-              </span>
+          {/* Center: Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center justify-center gap-8 text-xs font-bold uppercase tracking-widest text-zinc-400 md:w-2/4">
+            <Link href="/" className="hover:text-white hover:underline decoration-primary-gold underline-offset-4 transition-colors">
+              Home
+            </Link>
+            <Link href="/shop" className="hover:text-white hover:underline decoration-primary-gold underline-offset-4 transition-colors">
+              Collections
+            </Link>
+            <Link href="/trust" className="hover:text-white hover:underline decoration-primary-gold underline-offset-4 transition-colors">
+              Authenticity
+            </Link>
+            <Link href="/about" className="hover:text-white hover:underline decoration-primary-gold underline-offset-4 transition-colors">
+              About Us
+            </Link>
+          </nav>
+
+          {/* Right: Action Icons Panel */}
+          <div className="flex items-center justify-end gap-3 sm:gap-4 md:w-1/4">
+            {/* Theme Toggle */}
+            <button 
+              onClick={toggleTheme}
+              className="p-2 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white transition-all duration-300 flex items-center justify-center cursor-pointer"
+              title={mounted && theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
+              aria-label="Toggle visual theme"
+            >
+              {!mounted ? (
+                <div className="h-4 w-4" />
+              ) : theme === "light" ? (
+                <Moon className="h-4 w-4 text-[#8C7853]" />
+              ) : (
+                <Sun className="h-4 w-4 text-primary-gold" />
+              )}
+            </button>
+
+            {/* Sound Toggle (watch heartbeat simulator) */}
+            <button 
+              onClick={toggleSound}
+              className={`p-2 rounded-full border transition-all duration-500 flex items-center justify-center relative group ${
+                mounted && isSoundEnabled 
+                  ? "border-primary-gold/45 bg-primary-gold/5 text-primary-gold animate-pulse-gold" 
+                  : "border-zinc-800 text-zinc-550 hover:border-zinc-700"
+              }`}
+              title={mounted && isSoundEnabled ? "Mute Mechanical Tick" : "Listen to Mechanical Tick"}
+              aria-label="Toggle mechanical ticking sound"
+            >
+              {mounted && isSoundEnabled ? (
+                <>
+                  <Volume2 className="h-4 w-4" />
+                  {/* Visual ticking wheel */}
+                  <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary-gold animate-ping" />
+                </>
+              ) : (
+                <VolumeX className="h-4 w-4" />
+              )}
+            </button>
+
+            {/* Wishlist Link */}
+            <Link 
+              href="/shop?filter=wishlist" 
+              className="p-2 text-zinc-400 hover:text-white relative transition-colors"
+              title="Wishlist"
+            >
+              <Heart className="h-4 w-4" />
+              {mounted && wishlist.length > 0 && (
+                <span className="absolute top-0 right-0 bg-primary-gold text-black font-sans text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-zinc-950">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+
+            {/* Compare Counter */}
+            {mounted && compareList.length > 0 && (
+              <div 
+                className="p-2 text-primary-gold relative flex items-center justify-center border border-primary-gold/20 bg-primary-gold/5 rounded-full"
+                title="Compare Drawer Active"
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+                <span className="absolute -top-1 -right-1 bg-white text-black font-sans text-[8px] font-extrabold h-3.5 w-3.5 rounded-full flex items-center justify-center border border-zinc-950">
+                  {compareList.length}
+                </span>
+              </div>
             )}
-          </button>
 
-          {/* Mobile Menu Icon */}
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-zinc-400 hover:text-white transition-colors"
-            aria-label="Toggle navigation menu"
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+            {/* Cart Bag Trigger */}
+            <button 
+              onClick={() => setCartOpen(true)}
+              className="p-2 text-zinc-400 hover:text-white relative transition-colors"
+              title="Open Vault"
+              aria-label="Open shopping cart"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              {mounted && cartItemsCount > 0 && (
+                <span className="absolute top-0 right-0 bg-primary-gold text-black font-sans text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-zinc-950">
+                  {cartItemsCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

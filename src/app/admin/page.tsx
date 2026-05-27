@@ -20,6 +20,10 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeTab, setActiveTab] = useState<"stats" | "products" | "addProduct" | "orders">("stats");
 
+  // Cloudinary image upload loading states
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadingPrimary, setUploadingPrimary] = useState<boolean>(false);
+
   // Secure admin authorization state
   const [userIdInput, setUserIdInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
@@ -56,7 +60,10 @@ export default function AdminPage() {
     caseShape: "Round",
     caseLength: "",
     caseWidth: "",
-    images: ["", "", "", "", "", ""]
+    images: ["", "", "", "", "", ""],
+    style: "Casual",
+    isNewArrival: false,
+    isSummerSale: false
   });
 
   // Load from local storage or fall back
@@ -187,6 +194,9 @@ export default function AdminPage() {
         caseLength: formWatch.caseLength || "",
         caseWidth: formWatch.caseWidth || "",
         images: cleanedImages.length > 0 ? cleanedImages : [primaryImage],
+        style: formWatch.style || "Casual",
+        isNewArrival: !!formWatch.isNewArrival,
+        isSummerSale: !!formWatch.isSummerSale,
       };
 
       if (editingId) {
@@ -264,7 +274,10 @@ export default function AdminPage() {
         caseShape: "Round",
         caseLength: "",
         caseWidth: "",
-        images: ["", "", "", "", "", ""]
+        images: ["", "", "", "", "", ""],
+        style: "Casual",
+        isNewArrival: false,
+        isSummerSale: false
       });
       setActiveTab("products");
     } catch (err) {
@@ -302,7 +315,10 @@ export default function AdminPage() {
       "Case Shape",
       "Case Length",
       "Case Width",
-      "Gallery Images"
+      "Gallery Images",
+      "Style",
+      "Is New Arrival",
+      "Is Summer Sale"
     ];
     
     const sampleRow1 = [
@@ -333,7 +349,10 @@ export default function AdminPage() {
       "Round",
       "51.80 Mm",
       "44.80 Mm",
-      "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?q=80&w=1000;https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1000;https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?q=80&w=1000"
+      "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?q=80&w=1000;https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1000;https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?q=80&w=1000",
+      "Casual",
+      "false",
+      "false"
     ];
 
     const sampleRow2 = [
@@ -364,7 +383,10 @@ export default function AdminPage() {
       "Round",
       "40mm",
       "40mm",
-      "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000"
+      "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000",
+      "Formal",
+      "true",
+      "true"
     ];
     
     const escapeCSV = (str: string) => {
@@ -439,6 +461,8 @@ export default function AdminPage() {
         if (row.length === 0 || (row.length === 1 && row[0] === "")) continue;
 
         const watch: Partial<WatchProduct> = {};
+        const galleryUrls: string[] = [];
+        let primaryImg: string = "";
 
         csvHeaders.forEach((header, index) => {
           const val = (row[index] || "").trim();
@@ -452,6 +476,7 @@ export default function AdminPage() {
             case "caliber": watch.caliber = val; break;
             case "case material": watch.caseMaterial = val; break;
             case "strap type": watch.strapMaterial = val; break;
+            case "strap detail":
             case "strap details": watch.strapDetails = val; break;
             case "water resistance": watch.waterResistance = val; break;
             case "dial color": watch.dialColor = val; break;
@@ -459,8 +484,21 @@ export default function AdminPage() {
             case "thickness": watch.thickness = val; break;
             case "power reserve": watch.powerReserve = val; break;
             case "jewels": watch.jewels = Number(val) || 0; break;
-            case "image url": watch.imageUrl = val; break;
-            case "sku": watch.sku = val; break;
+            case "primary image url":
+            case "image url":
+              watch.imageUrl = val;
+              primaryImg = val;
+              break;
+            case "image url-2":
+            case "image url-3":
+            case "image url-4":
+            case "image url-5":
+              galleryUrls.push(val);
+              break;
+            case "id":
+            case "sku":
+              watch.sku = val;
+              break;
             case "stock": watch.stock = Number(val) || 0; break;
             case "description": watch.description = val; break;
             case "display brand": watch.displayBrand = val; break;
@@ -475,8 +513,22 @@ export default function AdminPage() {
             case "gallery images":
               watch.images = val.split(";").map(img => img.trim()).filter(img => img !== "");
               break;
+            case "style": watch.style = val; break;
+            case "is new arrival": watch.isNewArrival = val.toLowerCase() === "true" || val === "1"; break;
+            case "is summer sale": watch.isSummerSale = val.toLowerCase() === "true" || val === "1"; break;
           }
         });
+
+        // Resolve images list from multiple columns if available
+        if (primaryImg) {
+          const collectedImages = [primaryImg];
+          galleryUrls.forEach(url => {
+            if (url && !collectedImages.includes(url)) {
+              collectedImages.push(url);
+            }
+          });
+          watch.images = collectedImages;
+        }
 
         if (!watch.name || watch.name.trim() === "") continue;
 
@@ -524,6 +576,9 @@ export default function AdminPage() {
           rating: 5.0,
           reviewsCount: 0,
           reviews: [],
+          style: watch.style || "Casual",
+          isNewArrival: !!watch.isNewArrival,
+          isSummerSale: !!watch.isSummerSale,
         };
 
         newProducts.push(finalWatch);
@@ -1156,7 +1211,57 @@ export default function AdminPage() {
                     <option value="Guys">Guys</option>
                     <option value="Ladies">Ladies</option>
                     <option value="Unisex">Unisex</option>
+                    <option value="Kids">Kids</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase font-bold text-zinc-500 block">Watch Style / Category</label>
+                  <select 
+                    name="style"
+                    value={formWatch.style || "Casual"}
+                    onChange={handleInputChange}
+                    className="w-full bg-[#070707] border border-zinc-800 text-zinc-300 px-3 py-2 rounded focus:outline-none focus:border-primary-gold"
+                  >
+                    <option value="Casual">Casual Watches</option>
+                    <option value="Formal">Formal Watches</option>
+                    <option value="Digital">Digital Watches</option>
+                    <option value="Smart">Smart Watches</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-6 pt-5">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input 
+                      type="checkbox"
+                      name="isNewArrival"
+                      checked={!!formWatch.isNewArrival}
+                      onChange={(e) => {
+                        setFormWatch({
+                          ...formWatch,
+                          isNewArrival: e.target.checked
+                        });
+                      }}
+                      className="rounded border-zinc-850 accent-primary-gold bg-black scale-110"
+                    />
+                    <span className="text-[10px] font-bold uppercase text-zinc-400">New Arrival</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input 
+                      type="checkbox"
+                      name="isSummerSale"
+                      checked={!!formWatch.isSummerSale}
+                      onChange={(e) => {
+                        setFormWatch({
+                          ...formWatch,
+                          isSummerSale: e.target.checked
+                        });
+                      }}
+                      className="rounded border-zinc-850 accent-primary-gold bg-black scale-110"
+                    />
+                    <span className="text-[10px] font-bold uppercase text-zinc-400">Summer Sale</span>
+                  </label>
                 </div>
               </div>
 
@@ -1291,7 +1396,54 @@ export default function AdminPage() {
               <span className="text-[10px] uppercase font-bold text-primary-gold block tracking-wider">Multi-Angle Image Gallery (5-6 URLs)</span>
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="space-y-1">
-                  <label className="text-[8px] uppercase font-bold text-zinc-650 block">Gallery Image URL {i + 1} {i === 0 ? "(Primary)" : ""}</label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-[8px] uppercase font-bold text-zinc-650 block">Gallery Image URL {i + 1} {i === 0 ? "(Primary)" : ""}</label>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        id={`file-upload-${i}`}
+                        className="hidden"
+                        disabled={uploadingIndex !== null}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          
+                          setUploadingIndex(i);
+                          const formData = new FormData();
+                          formData.append("file", file);
+                          
+                          try {
+                            const res = await fetch("/api/upload", {
+                              method: "POST",
+                              body: formData
+                            });
+                            const data = await res.json();
+                            if (data.url) {
+                              handleImageChange(i, data.url);
+                              alert("✅ Image uploaded to Cloudinary successfully!");
+                            } else {
+                              alert(`❌ Upload failed: ${data.error || "Unknown error"}`);
+                            }
+                          } catch (err: any) {
+                            alert(`❌ Upload error: ${err.message}`);
+                          } finally {
+                            setUploadingIndex(null);
+                          }
+                        }}
+                      />
+                      <label 
+                        htmlFor={`file-upload-${i}`}
+                        className={`cursor-pointer text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded transition-all duration-300 ${
+                          uploadingIndex === i
+                            ? "bg-zinc-800 text-zinc-500 border border-zinc-700 animate-pulse cursor-not-allowed"
+                            : "text-primary-gold border border-primary-gold/20 hover:border-primary-gold bg-primary-gold/5"
+                        }`}
+                      >
+                        {uploadingIndex === i ? "Uploading..." : "Upload to Cloudinary"}
+                      </label>
+                    </div>
+                  </div>
                   <input 
                     type="text" 
                     placeholder={`e.g. https://images.unsplash.com/photo-...`}
@@ -1304,7 +1456,57 @@ export default function AdminPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[9px] uppercase font-bold text-zinc-500 block">Primary Photo URL <span className="text-zinc-600 normal-case font-normal">(auto-uses Gallery Image 1 if blank)</span></label>
+              <div className="flex justify-between items-center">
+                <label className="text-[9px] uppercase font-bold text-zinc-500 block">Primary Photo URL <span className="text-zinc-600 normal-case font-normal">(auto-uses Gallery Image 1 if blank)</span></label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    id="file-upload-primary"
+                    className="hidden"
+                    disabled={uploadingPrimary}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      
+                      setUploadingPrimary(true);
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      
+                      try {
+                        const res = await fetch("/api/upload", {
+                          method: "POST",
+                          body: formData
+                        });
+                        const data = await res.json();
+                        if (data.url) {
+                          setFormWatch({
+                            ...formWatch,
+                            imageUrl: data.url
+                          });
+                          alert("✅ Primary image uploaded to Cloudinary successfully!");
+                        } else {
+                          alert(`❌ Upload failed: ${data.error || "Unknown error"}`);
+                        }
+                      } catch (err: any) {
+                        alert(`❌ Upload error: ${err.message}`);
+                      } finally {
+                        setUploadingPrimary(false);
+                      }
+                    }}
+                  />
+                  <label 
+                    htmlFor="file-upload-primary"
+                    className={`cursor-pointer text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded transition-all duration-300 ${
+                      uploadingPrimary
+                        ? "bg-zinc-800 text-zinc-500 border border-zinc-700 animate-pulse cursor-not-allowed"
+                        : "text-primary-gold border border-primary-gold/20 hover:border-primary-gold bg-primary-gold/5"
+                    }`}
+                  >
+                    {uploadingPrimary ? "Uploading..." : "Upload to Cloudinary"}
+                  </label>
+                </div>
+              </div>
               <input 
                 type="text" 
                 name="imageUrl"

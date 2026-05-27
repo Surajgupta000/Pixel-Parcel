@@ -259,7 +259,7 @@ function ShopContent() {
       <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 lg:gap-8">
 
         {/* FILTERS PANEL — Desktop sidebar only */}
-        <aside className="hidden lg:block lg:col-span-1 bg-[#0E0E0E] border border-zinc-900 rounded-lg p-6 h-fit sticky top-28">
+        <aside className="hidden lg:block lg:col-span-1 bg-[#0E0E0E] border border-zinc-900 rounded-lg p-6 h-fit sticky top-[168px]">
           <div className="flex justify-between items-center pb-4 border-b border-zinc-850 mb-6">
             <h3 className="font-serif text-white text-lg tracking-wide flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4 text-primary-gold" />

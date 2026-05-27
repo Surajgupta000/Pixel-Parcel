@@ -22,65 +22,19 @@ const sections: Section[] = [
   {
     name: "Home",
     subCategories: [
-      { name: "Living Room", filter: (w) => w.id === "celestial-eclipse" || w.id === "aero-tourbillon" || w.id === "chronos-horizon" },
-      { name: "Desk Chronos", filter: (w) => w.id === "vanguard-classic" || w.id === "nomad-gmt" || w.id === "quantum-stealth" },
-      { name: "Concierge Specials", filter: (w) => w.id === "chronos-horizon" || w.id === "celestial-eclipse" || w.id === "aero-tourbillon" },
-      { name: "Library Clocks", filter: (w) => w.id === "celestial-eclipse" || w.id === "nomad-gmt" || w.id === "onyx-spectre" }
-    ]
-  },
-  {
-    name: "Brand",
-    subCategories: [
-      { name: "Pixel & Parcel", filter: (w) => w.id === "chronos-horizon" || w.id === "vanguard-classic" || w.id === "nomad-gmt" },
-      { name: "Geneva Atelier", filter: (w) => w.id === "celestial-eclipse" || w.id === "aero-tourbillon" || w.id === "quantum-stealth" },
-      { name: "Heritage Masters", filter: (w) => w.id === "chronos-horizon" || w.id === "celestial-eclipse" || w.id === "aero-tourbillon" },
-      { name: "Vanguard Lab", filter: (w) => w.id === "quantum-stealth" || w.id === "onyx-spectre" || w.id === "apex-mariner" }
+      { name: "Casual Watches", filter: (w) => w.style === "Casual" },
+      { name: "Formal Watches", filter: (w) => w.style === "Formal" },
+      { name: "Digital Watches", filter: (w) => w.style === "Digital" },
+      { name: "Smart Watches", filter: (w) => w.style === "Smart" }
     ]
   },
   {
     name: "New Arrivals",
-    subCategories: [
-      { name: "GMT Series", filter: (w) => w.id === "nomad-gmt" || w.id === "apex-mariner" || w.id === "vanguard-classic" },
-      { name: "Skeleton Openwork", filter: (w) => w.id === "quantum-stealth" || w.id === "aero-tourbillon" || w.id === "onyx-spectre" },
-      { name: "Celestial Moonphase", filter: (w) => w.id === "celestial-eclipse" || w.id === "chronos-horizon" || w.id === "aero-tourbillon" },
-      { name: "Stealth Editions", filter: (w) => w.id === "onyx-spectre" || w.id === "quantum-stealth" || w.id === "nomad-gmt" }
-    ]
-  },
-  {
-    name: "Luxury Watches",
-    subCategories: [
-      { name: "Platinum Calibers", filter: (w) => w.id === "aero-tourbillon" || w.id === "celestial-eclipse" || w.id === "chronos-horizon" },
-      { name: "18K Gold Series", filter: (w) => w.id === "chronos-horizon" || w.id === "celestial-eclipse" || w.id === "aero-tourbillon" },
-      { name: "Titanium Diver", filter: (w) => w.id === "apex-mariner" || w.id === "quantum-stealth" || w.id === "onyx-spectre" },
-      { name: "Tourbillon Specials", filter: (w) => w.id === "aero-tourbillon" || w.id === "celestial-eclipse" || w.id === "quantum-stealth" }
-    ]
-  },
-  {
-    name: "Gender",
-    subCategories: [
-      { name: "Gentlemen Classics", filter: (w) => w.id === "chronos-horizon" || w.id === "vanguard-classic" || w.id === "apex-mariner" },
-      { name: "Ladies Diamond", filter: (w) => w.id === "celestial-eclipse" || w.id === "nomad-gmt" || w.id === "vanguard-classic" },
-      { name: "Unisex Modern", filter: (w) => w.id === "nomad-gmt" || w.id === "quantum-stealth" || w.id === "onyx-spectre" },
-      { name: "Bespoke Collection", filter: (w) => w.id === "aero-tourbillon" || w.id === "chronos-horizon" || w.id === "celestial-eclipse" }
-    ]
+    subCategories: []
   },
   {
     name: "Summer Sales",
-    subCategories: [
-      { name: "Voyager GMT", filter: (w) => w.id === "nomad-gmt" || w.id === "apex-mariner" || w.id === "vanguard-classic" },
-      { name: "Chronos Gold", filter: (w) => w.id === "chronos-horizon" || w.id === "celestial-eclipse" || w.id === "aero-tourbillon" },
-      { name: "Classic Steel", filter: (w) => w.id === "vanguard-classic" || w.id === "onyx-spectre" || w.id === "nomad-gmt" },
-      { name: "Stealth Onyx", filter: (w) => w.id === "onyx-spectre" || w.id === "quantum-stealth" || w.id === "apex-mariner" }
-    ]
-  },
-  {
-    name: "Watch Type",
-    subCategories: [
-      { name: "Automatic Sweep", filter: (w) => w.movement === "Automatic" },
-      { name: "Mechanical Manual", filter: (w) => w.movement === "Mechanical" },
-      { name: "Quartz Precision", filter: (w) => w.movement === "Quartz" },
-      { name: "Flying Tourbillon", filter: (w) => w.id === "aero-tourbillon" || w.id === "celestial-eclipse" || w.id === "quantum-stealth" }
-    ]
+    subCategories: []
   }
 ];
 
@@ -270,11 +224,11 @@ export default function HomePage() {
   const [showTour, setShowTour] = useState(false);
   const [tourStep, setTourStep] = useState(1);
   const [menActiveSection, setMenActiveSection] = useState(0);
-  const [menActiveSub, setMenActiveSub] = useState(0);
+  const [menActiveSub, setMenActiveSub] = useState<number | null>(null);
   const [womenActiveSection, setWomenActiveSection] = useState(0);
-  const [womenActiveSub, setWomenActiveSub] = useState(0);
+  const [womenActiveSub, setWomenActiveSub] = useState<number | null>(null);
   const [unisexActiveSection, setUnisexActiveSection] = useState(0);
-  const [unisexActiveSub, setUnisexActiveSub] = useState(0);
+  const [unisexActiveSub, setUnisexActiveSub] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
 
@@ -414,53 +368,63 @@ export default function HomePage() {
     };
   }, []);
 
-  // Filter sections to remove Gender tab
-  const homeSections = sections.filter((sect) => sect.name !== "Gender");
+  // Filter sections
+  const homeSections = sections;
 
   // Filter products by gender group helper
-  const getWatchGender = (w: WatchProduct): "men" | "women" | "unisex" => {
+  const getWatchGender = (w: WatchProduct): "men" | "women" | "unisex" | "kids" => {
     if (w.gender) {
       const g = w.gender.toLowerCase();
       if (g === "guys" || g === "men" || g === "gentlemen") return "men";
       if (g === "ladies" || g === "women") return "women";
+      if (g === "kids" || g === "boys" || g === "girls" || g === "children") return "kids";
       if (g === "unisex") return "unisex";
     }
     // Fallback for static watches
-    if (w.id === "chronos-horizon" || w.id === "vanguard-classic" || w.id === "apex-mariner" || w.id === "nt3099sl01") {
+    if (w.id === "chronos-horizon" || w.id === "vanguard-classic" || w.id === "apex-mariner" || w.id === "nt3099sl01" || w.id === "stealth-pulse") {
       return "men";
     }
-    if (w.id === "celestial-eclipse") {
+    if (w.id === "celestial-eclipse" || w.id === "aura-rose") {
       return "women";
     }
     return "unisex";
   };
 
+  // Helper to filter watches based on active tab and style option
+  const getFilteredProducts = (
+    genderWatches: WatchProduct[],
+    activeSectionIdx: number,
+    activeSubIdx: number | null
+  ) => {
+    const section = homeSections[activeSectionIdx];
+    if (!section) return genderWatches;
+
+    if (section.name === "Home") {
+      if (activeSubIdx === null) {
+        return genderWatches;
+      }
+      const sub = section.subCategories[activeSubIdx];
+      return sub ? genderWatches.filter(sub.filter) : genderWatches;
+    } else if (section.name === "New Arrivals") {
+      return genderWatches.filter((w) => w.isNewArrival === true);
+    } else if (section.name === "Summer Sales") {
+      return genderWatches.filter((w) => w.isSummerSale === true);
+    }
+
+    return genderWatches;
+  };
+
   // Men
   const menWatches = productsList.filter((w) => getWatchGender(w) === "men");
-  const menActiveFilter = homeSections[menActiveSection].subCategories[menActiveSub].filter;
-  let filteredMenProducts = menWatches.filter(menActiveFilter);
-  if (filteredMenProducts.length === 0) {
-    filteredMenProducts = menWatches;
-  }
-  const displayMenProducts = filteredMenProducts.slice(0, 8);
+  const displayMenProducts = getFilteredProducts(menWatches, menActiveSection, menActiveSub).slice(0, 8);
 
   // Women
-  const womenWatches = productsList.filter((w) => getWatchGender(w) === "women" || w.id === "vanguard-classic" || w.id === "nomad-gmt");
-  const womenActiveFilter = homeSections[womenActiveSection].subCategories[womenActiveSub].filter;
-  let filteredWomenProducts = womenWatches.filter(womenActiveFilter);
-  if (filteredWomenProducts.length === 0) {
-    filteredWomenProducts = womenWatches;
-  }
-  const displayWomenProducts = filteredWomenProducts.slice(0, 8);
+  const womenWatches = productsList.filter((w) => getWatchGender(w) === "women");
+  const displayWomenProducts = getFilteredProducts(womenWatches, womenActiveSection, womenActiveSub).slice(0, 8);
 
-  // Unisex
-  const unisexWatches = productsList.filter((w) => getWatchGender(w) === "unisex" || w.id === "nomad-gmt");
-  const unisexActiveFilter = homeSections[unisexActiveSection].subCategories[unisexActiveSub].filter;
-  let filteredUnisexProducts = unisexWatches.filter(unisexActiveFilter);
-  if (filteredUnisexProducts.length === 0) {
-    filteredUnisexProducts = unisexWatches;
-  }
-  const displayUnisexProducts = filteredUnisexProducts.slice(0, 8);
+  // Unisex & Kids
+  const unisexWatches = productsList.filter((w) => getWatchGender(w) === "unisex" || getWatchGender(w) === "kids");
+  const displayUnisexProducts = getFilteredProducts(unisexWatches, unisexActiveSection, unisexActiveSub).slice(0, 8);
 
   const renderWatchCard = (watch: WatchProduct) => {
     return (
@@ -547,7 +511,7 @@ export default function HomePage() {
       )}
 
       {/* 2. HERO SECTION */}
-      <section className="relative min-h-[80vh] sm:h-[85vh] flex items-center justify-center overflow-hidden border-b border-zinc-900 bg-gradient-to-b from-[#080808] to-[#121212]">
+      <section className="dark-section relative min-h-[80vh] sm:h-[85vh] flex items-center justify-center overflow-hidden border-b border-zinc-900 bg-gradient-to-b from-[#080808] to-[#121212]">
         
         {/* WebGL/Canvas gear movement in the background */}
         <div className="absolute inset-0 z-0 pointer-events-none">
@@ -608,11 +572,11 @@ export default function HomePage() {
                   key={sect.name}
                   onMouseEnter={() => {
                     setMenActiveSection(idx);
-                    setMenActiveSub(0);
+                    setMenActiveSub(null);
                   }}
                   onClick={() => {
                     setMenActiveSection(idx);
-                    setMenActiveSub(0);
+                    setMenActiveSub(null);
                   }}
                   className={`px-3 sm:px-4 py-2 rounded transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
                     menActiveSection === idx 
@@ -627,26 +591,34 @@ export default function HomePage() {
           </div>
 
           {/* Sub-Category Bar */}
-          <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-            {homeSections[menActiveSection].subCategories.map((sub, sIdx) => (
-              <button
-                key={sub.name}
-                onMouseEnter={() => setMenActiveSub(sIdx)}
-                onClick={() => setMenActiveSub(sIdx)}
-                className={`px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-full border transition-all duration-300 ${
-                  menActiveSub === sIdx
-                    ? "border-primary-gold bg-primary-gold/15 text-primary-gold"
-                    : "border-zinc-900 bg-transparent text-zinc-500 hover:text-zinc-350 hover:border-zinc-800"
-                }`}
-              >
-                {sub.name}
-              </button>
-            ))}
-          </div>
+          {homeSections[menActiveSection].subCategories.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-center lg:justify-start animate-fade-in">
+              {homeSections[menActiveSection].subCategories.map((sub, sIdx) => (
+                <button
+                  key={sub.name}
+                  onMouseEnter={() => setMenActiveSub(sIdx)}
+                  onClick={() => setMenActiveSub(sIdx)}
+                  className={`px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-full border transition-all duration-300 ${
+                    menActiveSub === sIdx
+                      ? "border-primary-gold bg-primary-gold/15 text-primary-gold"
+                      : "border-zinc-900 bg-transparent text-zinc-500 hover:text-zinc-350 hover:border-zinc-800"
+                  }`}
+                >
+                  {sub.name}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Product grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px]">
-            {displayMenProducts.map((watch) => renderWatchCard(watch))}
+            {displayMenProducts.length > 0 ? (
+              displayMenProducts.map((watch) => renderWatchCard(watch))
+            ) : (
+              <div className="w-full flex flex-col items-center justify-center py-16 text-zinc-500 text-sm italic">
+                No timepieces found in this category.
+              </div>
+            )}
           </div>
 
         </div>
@@ -671,11 +643,11 @@ export default function HomePage() {
                   key={sect.name}
                   onMouseEnter={() => {
                     setWomenActiveSection(idx);
-                    setWomenActiveSub(0);
+                    setWomenActiveSub(null);
                   }}
                   onClick={() => {
                     setWomenActiveSection(idx);
-                    setWomenActiveSub(0);
+                    setWomenActiveSub(null);
                   }}
                   className={`px-3 sm:px-4 py-2 rounded transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
                     womenActiveSection === idx 
@@ -690,26 +662,34 @@ export default function HomePage() {
           </div>
 
           {/* Sub-Category Bar */}
-          <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-            {homeSections[womenActiveSection].subCategories.map((sub, sIdx) => (
-              <button
-                key={sub.name}
-                onMouseEnter={() => setWomenActiveSub(sIdx)}
-                onClick={() => setWomenActiveSub(sIdx)}
-                className={`px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-full border transition-all duration-300 ${
-                  womenActiveSub === sIdx
-                    ? "border-primary-gold bg-primary-gold/15 text-primary-gold"
-                    : "border-zinc-900 bg-transparent text-zinc-500 hover:text-zinc-350 hover:border-zinc-800"
-                }`}
-              >
-                {sub.name}
-              </button>
-            ))}
-          </div>
+          {homeSections[womenActiveSection].subCategories.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-center lg:justify-start animate-fade-in">
+              {homeSections[womenActiveSection].subCategories.map((sub, sIdx) => (
+                <button
+                  key={sub.name}
+                  onMouseEnter={() => setWomenActiveSub(sIdx)}
+                  onClick={() => setWomenActiveSub(sIdx)}
+                  className={`px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-full border transition-all duration-300 ${
+                    womenActiveSub === sIdx
+                      ? "border-primary-gold bg-primary-gold/15 text-primary-gold"
+                      : "border-zinc-900 bg-transparent text-zinc-500 hover:text-zinc-350 hover:border-zinc-800"
+                  }`}
+                >
+                  {sub.name}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Product grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px]">
-            {displayWomenProducts.map((watch) => renderWatchCard(watch))}
+            {displayWomenProducts.length > 0 ? (
+              displayWomenProducts.map((watch) => renderWatchCard(watch))
+            ) : (
+              <div className="w-full flex flex-col items-center justify-center py-16 text-zinc-500 text-sm italic">
+                No timepieces found in this category.
+              </div>
+            )}
           </div>
 
         </div>
@@ -722,9 +702,9 @@ export default function HomePage() {
           {/* Header & Categories Menu */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-4 border-b border-zinc-900">
             <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-gold block">Modernist Horizon</span>
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-white tracking-wide">The Unisex Collection</h3>
-              <p className="text-xs text-zinc-400 max-w-lg font-light">Sleek grade-5 titanium, avant-garde openwork skeletonization, and minimalist shapes designed for everyone.</p>
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-gold block">Modernist &amp; Youth Horizon</span>
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-white tracking-wide">The Unisex &amp; Kids Collection</h3>
+              <p className="text-xs text-zinc-400 max-w-lg font-light">Sleek grade-5 titanium, avant-garde openwork skeletonization, and premium watches designed for everyone, including children.</p>
             </div>
             
             {/* Interactive Luxury Section Tabs — scrollable on mobile */}
@@ -734,11 +714,11 @@ export default function HomePage() {
                   key={sect.name}
                   onMouseEnter={() => {
                     setUnisexActiveSection(idx);
-                    setUnisexActiveSub(0);
+                    setUnisexActiveSub(null);
                   }}
                   onClick={() => {
                     setUnisexActiveSection(idx);
-                    setUnisexActiveSub(0);
+                    setUnisexActiveSub(null);
                   }}
                   className={`px-3 sm:px-4 py-2 rounded transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
                     unisexActiveSection === idx 
@@ -753,26 +733,34 @@ export default function HomePage() {
           </div>
 
           {/* Sub-Category Bar */}
-          <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-            {homeSections[unisexActiveSection].subCategories.map((sub, sIdx) => (
-              <button
-                key={sub.name}
-                onMouseEnter={() => setUnisexActiveSub(sIdx)}
-                onClick={() => setUnisexActiveSub(sIdx)}
-                className={`px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-full border transition-all duration-300 ${
-                  unisexActiveSub === sIdx
-                    ? "border-primary-gold bg-primary-gold/15 text-primary-gold"
-                    : "border-zinc-900 bg-transparent text-zinc-500 hover:text-zinc-350 hover:border-zinc-800"
-                }`}
-              >
-                {sub.name}
-              </button>
-            ))}
-          </div>
+          {homeSections[unisexActiveSection].subCategories.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-center lg:justify-start animate-fade-in">
+              {homeSections[unisexActiveSection].subCategories.map((sub, sIdx) => (
+                <button
+                  key={sub.name}
+                  onMouseEnter={() => setUnisexActiveSub(sIdx)}
+                  onClick={() => setUnisexActiveSub(sIdx)}
+                  className={`px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-full border transition-all duration-300 ${
+                    unisexActiveSub === sIdx
+                      ? "border-primary-gold bg-primary-gold/15 text-primary-gold"
+                      : "border-zinc-900 bg-transparent text-zinc-500 hover:text-zinc-350 hover:border-zinc-800"
+                  }`}
+                >
+                  {sub.name}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Product grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px]">
-            {displayUnisexProducts.map((watch) => renderWatchCard(watch))}
+            {displayUnisexProducts.length > 0 ? (
+              displayUnisexProducts.map((watch) => renderWatchCard(watch))
+            ) : (
+              <div className="w-full flex flex-col items-center justify-center py-16 text-zinc-500 text-sm italic">
+                No timepieces found in this category.
+              </div>
+            )}
           </div>
 
           <div className="text-center pt-4">

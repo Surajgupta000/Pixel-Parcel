@@ -4,7 +4,7 @@ import { ShieldCheck, Truck, RotateCcw, Box, Lock } from "lucide-react";
 
 export default function TrustBar() {
   return (
-    <div className="sticky top-20 z-40 w-full bg-[#0B0B0B]/90 backdrop-blur-md border-b border-zinc-900 py-3 shadow-sm select-none">
+    <div className="sticky top-[116px] z-40 w-full bg-[#0B0B0B]/90 backdrop-blur-md border-b border-zinc-900 py-3 shadow-sm select-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.15em] text-[#F5F5F7] whitespace-nowrap overflow-x-auto scrollbar-none gap-6 md:gap-10">
           <div className="flex items-center gap-2 mx-auto sm:mx-0">

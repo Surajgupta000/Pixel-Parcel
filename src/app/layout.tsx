@@ -54,8 +54,21 @@ export default function RootLayout({
       className={`${inter.variable} ${cormorant.variable} h-full antialiased scroll-smooth`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            const savedTheme = localStorage.getItem('pp_theme');
+            const parsedTheme = savedTheme ? JSON.parse(savedTheme) : 'dark';
+            if (parsedTheme === 'light') {
+              document.documentElement.classList.add('light');
+            } else {
+              document.documentElement.classList.remove('light');
+            }
+          } catch (e) {}
+        ` }} />
+      </head>
       <body
-        className="min-h-full flex flex-col bg-[#080808] text-[#F5F5F7]"
+        className="min-h-full flex flex-col"
         suppressHydrationWarning
       >
         {/* Global sensory ticking sound */}

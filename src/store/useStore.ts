@@ -38,6 +38,8 @@ interface AppState {
   // UI / Sound Actions
   toggleSound: () => void;
   setExitIntentSeen: (seen: boolean) => void;
+  theme: "light" | "dark";
+  toggleTheme: () => void;
 }
 
 export const useStore = create<AppState>((set, get) => {
@@ -178,6 +180,22 @@ export const useStore = create<AppState>((set, get) => {
 
     setExitIntentSeen: (seen) => {
       set({ exitIntentSeen: seen });
+    },
+
+    theme: 'dark',
+    toggleTheme: () => {
+      const nextTheme = get().theme === 'light' ? 'dark' : 'light';
+      set({ theme: nextTheme });
+      setLocalStorage('pp_theme', nextTheme);
+      
+      if (typeof window !== 'undefined') {
+        const root = document.documentElement;
+        if (nextTheme === 'light') {
+          root.classList.add('light');
+        } else {
+          root.classList.remove('light');
+        }
+      }
     }
   };
 });
