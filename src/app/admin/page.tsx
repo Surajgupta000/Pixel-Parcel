@@ -73,7 +73,7 @@ export default function AdminPage() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch("/api/products", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setProductsList(data);

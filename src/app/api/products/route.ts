@@ -3,6 +3,8 @@ import fs from "fs";
 import path from "path";
 import { products as defaultProducts } from "@/data/products";
 
+export const dynamic = "force-dynamic";
+
 // Resolve path to the database file: src/data/products.json
 const dbFilePath = path.join(process.cwd(), "src", "data", "products.json");
 

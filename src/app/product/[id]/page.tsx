@@ -25,7 +25,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const loadProduct = async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch("/api/products", { cache: "no-store" });
         if (res.ok) {
           const list: WatchProduct[] = await res.json();
           const decoded = decodeURIComponent(watchId).toLowerCase();
