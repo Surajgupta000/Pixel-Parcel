@@ -27,13 +27,44 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   title: "Pixel & Parcel | Luxury Mechanical Timepieces",
-  description: "Where modern digital precision meets physical artisanal craftsmanship. Discover our range of certified authentic mechanical watches.",
-  keywords: "luxury watches, mechanical watch, automatic watch, tourbillon, titanium watch, gold watch, timepieces",
-  metadataBase: new URL("http://localhost:3000"),
+  description: "Where modern digital precision meets physical artisanal craftsmanship. Discover our curated vault of certified authentic mechanical and automatic watches.",
+  keywords: [
+    "Pixel & Parcel",
+    "luxury watches",
+    "mechanical watches",
+    "automatic watches",
+    "watchmaker atelier",
+    "blockchain watch certificate",
+    "authentic luxury timepieces",
+    "Swiss craftsmanship",
+    "tourbillon",
+    "chronometer",
+    "luxury watch brand",
+    "buy mechanical watches",
+    "timepieces online"
+  ].join(", "),
+  metadataBase: new URL("https://pixel-parcel.vercel.app"),
   openGraph: {
     title: "Pixel & Parcel | Luxury Mechanical Timepieces",
-    description: "Where time meets trust. Authentic watchmaker craftsmanship verified by blockchain serial certificate.",
-    images: ["https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000"],
+    description: "Where time meets trust. Curated high-precision mechanical timepieces verified by secure blockchain authenticity certificates.",
+    url: "https://pixel-parcel.vercel.app",
+    siteName: "Pixel & Parcel",
+    locale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "/og_share_logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Pixel & Parcel - Where time meets trust"
+      }
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pixel & Parcel | Luxury Mechanical Timepieces",
+    description: "Where time meets trust. Curated high-precision mechanical timepieces verified by secure blockchain authenticity certificates.",
+    images: ["/og_share_logo.png"],
   }
 };
 
