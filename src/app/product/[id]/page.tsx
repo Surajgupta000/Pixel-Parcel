@@ -23,27 +23,54 @@ export default function ProductDetailPage() {
   });
   
   useEffect(() => {
-    const local = localStorage.getItem("pp_products");
-    if (local) {
+    const loadProduct = async () => {
       try {
-        const list: WatchProduct[] = JSON.parse(local);
-        const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
-        const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
-        const decodedWatchId = decodeURIComponent(watchId).toLowerCase();
-        const found = list.find(p => decodeURIComponent(p.id).toLowerCase() === decodedWatchId);
-        if (found) {
-          const cleanImg = isValidUrl(found.imageUrl) ? found.imageUrl.trim() : fallback;
-          const cleanImages = Array.isArray(found.images) ? found.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
-          setWatch({
-            ...found,
-            imageUrl: cleanImg,
-            images: cleanImages.length > 0 ? cleanImages : [cleanImg]
-          });
+        const res = await fetch("/api/products");
+        if (res.ok) {
+          const list: WatchProduct[] = await res.json();
+          const decoded = decodeURIComponent(watchId).toLowerCase();
+          const found = list.find(p => decodeURIComponent(p.id).toLowerCase() === decoded);
+          if (found) {
+            const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
+            const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
+            const cleanImg = isValidUrl(found.imageUrl) ? found.imageUrl.trim() : fallback;
+            const cleanImages = Array.isArray(found.images) ? found.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
+            setWatch({
+              ...found,
+              imageUrl: cleanImg,
+              images: cleanImages.length > 0 ? cleanImages : [cleanImg]
+            });
+            return;
+          }
         }
-      } catch (e) {
-        console.error("Error parsing products in detail page", e);
+      } catch (err) {
+        console.error("Error loading products on detail page from API", err);
       }
-    }
+
+      const local = localStorage.getItem("pp_products");
+      if (local) {
+        try {
+          const list: WatchProduct[] = JSON.parse(local);
+          const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
+          const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
+          const decoded = decodeURIComponent(watchId).toLowerCase();
+          const found = list.find(p => decodeURIComponent(p.id).toLowerCase() === decoded);
+          if (found) {
+            const cleanImg = isValidUrl(found.imageUrl) ? found.imageUrl.trim() : fallback;
+            const cleanImages = Array.isArray(found.images) ? found.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
+            setWatch({
+              ...found,
+              imageUrl: cleanImg,
+              images: cleanImages.length > 0 ? cleanImages : [cleanImg]
+            });
+          }
+        } catch (e) {
+          console.error("Error parsing products in detail page from localStorage", e);
+        }
+      }
+    };
+
+    loadProduct();
   }, [watchId]);
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);

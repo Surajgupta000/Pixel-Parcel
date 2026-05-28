@@ -71,31 +71,47 @@ export default function AdminPage() {
 
   // Load from local storage or fall back
   useEffect(() => {
-    const localProds = localStorage.getItem("pp_products");
-    if (localProds) {
+    const loadProducts = async () => {
       try {
-        const parsed = JSON.parse(localProds);
-        const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
-        const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
-        const sanitized = parsed.map((p: any) => {
-          const cleanImg = isValidUrl(p.imageUrl) ? p.imageUrl.trim() : fallback;
-          const cleanImages = Array.isArray(p.images) ? p.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
-          return {
-            ...p,
-            imageUrl: cleanImg,
-            images: cleanImages.length > 0 ? cleanImages : [cleanImg]
-          };
-        });
-        setProductsList(sanitized);
-        localStorage.setItem("pp_products", JSON.stringify(sanitized));
+        const res = await fetch("/api/products");
+        if (res.ok) {
+          const data = await res.json();
+          setProductsList(data);
+          localStorage.setItem("pp_products", JSON.stringify(data));
+          return;
+        }
       } catch (err) {
-        console.error("Error loading/sanitizing products in admin", err);
-        setProductsList(initialProducts);
+        console.error("Error fetching products from API, falling back to localStorage", err);
       }
-    } else {
-      setProductsList(initialProducts);
-      localStorage.setItem("pp_products", JSON.stringify(initialProducts));
-    }
+
+      const localProds = localStorage.getItem("pp_products");
+      if (localProds) {
+        try {
+          const parsed = JSON.parse(localProds);
+          const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
+          const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
+          const sanitized = parsed.map((p: any) => {
+            const cleanImg = isValidUrl(p.imageUrl) ? p.imageUrl.trim() : fallback;
+            const cleanImages = Array.isArray(p.images) ? p.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
+            return {
+              ...p,
+              imageUrl: cleanImg,
+              images: cleanImages.length > 0 ? cleanImages : [cleanImg]
+            };
+          });
+          setProductsList(sanitized);
+          localStorage.setItem("pp_products", JSON.stringify(sanitized));
+        } catch (err) {
+          console.error("Error loading/sanitizing products in admin", err);
+          setProductsList(initialProducts);
+        }
+      } else {
+        setProductsList(initialProducts);
+        localStorage.setItem("pp_products", JSON.stringify(initialProducts));
+      }
+    };
+
+    loadProducts();
 
     const localOrders = localStorage.getItem("pp_orders");
     if (localOrders) {
@@ -126,9 +142,18 @@ export default function AdminPage() {
     }
   }, []);
 
-  const saveProductsToStorage = (updatedList: WatchProduct[]) => {
+  const saveProductsToStorage = async (updatedList: WatchProduct[]) => {
     setProductsList(updatedList);
     localStorage.setItem("pp_products", JSON.stringify(updatedList));
+    try {
+      await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedList)
+      });
+    } catch (err) {
+      console.error("Error writing products database on server", err);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

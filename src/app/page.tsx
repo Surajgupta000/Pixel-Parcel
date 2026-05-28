@@ -210,26 +210,42 @@ export default function HomePage() {
   const { addToCart, wishlist, toggleWishlist, addToCompare } = useStore();
   const [productsList, setProductsList] = useState<WatchProduct[]>(products);
   useEffect(() => {
-    const local = localStorage.getItem("pp_products");
-    if (local) {
+    const loadProducts = async () => {
       try {
-        const parsed = JSON.parse(local);
-        const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
-        const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
-        const sanitized = parsed.map((p: any) => {
-          const cleanImg = isValidUrl(p.imageUrl) ? p.imageUrl.trim() : fallback;
-          const cleanImages = Array.isArray(p.images) ? p.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
-          return {
-            ...p,
-            imageUrl: cleanImg,
-            images: cleanImages.length > 0 ? cleanImages : [cleanImg]
-          };
-        });
-        setProductsList(sanitized);
-      } catch (e) {
-        console.error("Error loading products on homepage", e);
+        const res = await fetch("/api/products");
+        if (res.ok) {
+          const data = await res.json();
+          setProductsList(data);
+          localStorage.setItem("pp_products", JSON.stringify(data));
+          return;
+        }
+      } catch (err) {
+        console.error("Error loading products on homepage from API", err);
       }
-    }
+
+      const local = localStorage.getItem("pp_products");
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
+          const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
+          const sanitized = parsed.map((p: any) => {
+            const cleanImg = isValidUrl(p.imageUrl) ? p.imageUrl.trim() : fallback;
+            const cleanImages = Array.isArray(p.images) ? p.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
+            return {
+              ...p,
+              imageUrl: cleanImg,
+              images: cleanImages.length > 0 ? cleanImages : [cleanImg]
+            };
+          });
+          setProductsList(sanitized);
+        } catch (e) {
+          console.error("Error loading products on homepage from localStorage", e);
+        }
+      }
+    };
+
+    loadProducts();
   }, []);
   const [showTour, setShowTour] = useState(false);
   const [tourStep, setTourStep] = useState(1);
