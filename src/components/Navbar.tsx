@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@/store/useStore";
-import { ShoppingBag, Heart, ArrowLeftRight, Volume2, VolumeX, Menu, X, Sun, Moon } from "lucide-react";
+import { ShoppingBag, Heart, ArrowLeftRight, Volume2, VolumeX, Menu, X, Sun, Moon, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
@@ -9,6 +9,8 @@ export default function Navbar() {
   const { cart, wishlist, compareList, isSoundEnabled, toggleSound, setCartOpen, theme, toggleTheme } = useStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [menExpanded, setMenExpanded] = useState(false);
+  const [womenExpanded, setWomenExpanded] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -192,15 +194,92 @@ export default function Navbar() {
           >
             About Us
           </Link>
-          {/*
-          <Link 
-            href="/admin" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="py-2 text-zinc-600 hover:text-zinc-400"
-          >
-            Dashboard
-          </Link>
-          */}
+
+          {/* Categories Section for Mobile View */}
+          <div className="border-t border-zinc-900 pt-4 mt-2">
+            <span className="text-[10px] text-zinc-550 font-bold uppercase tracking-[0.2em] block mb-2">Shop Categories</span>
+            
+            {/* Men Category */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between py-2">
+                <Link 
+                  href="/shop?gender=men" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="hover:text-white text-zinc-300 font-bold"
+                >
+                  Men
+                </Link>
+                <button 
+                  onClick={() => setMenExpanded(!menExpanded)} 
+                  className="p-1 text-zinc-550 hover:text-white"
+                  aria-label="Toggle Men Subcategories"
+                >
+                  {menExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+              </div>
+              
+              {menExpanded && (
+                <div className="pl-4 flex flex-col gap-2 border-l border-zinc-900 ml-1 py-1">
+                  {["Casual", "Formal", "Digital", "Smart"].map(style => (
+                    <Link
+                      key={style}
+                      href={`/shop?gender=men&style=${style}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-[11px] text-zinc-500 hover:text-primary-gold transition-colors py-1 normal-case font-medium tracking-wide"
+                    >
+                      {style} Watches
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Women Category */}
+            <div className="space-y-1 mt-2">
+              <div className="flex items-center justify-between py-2">
+                <Link 
+                  href="/shop?gender=women" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="hover:text-white text-zinc-300 font-bold"
+                >
+                  Women
+                </Link>
+                <button 
+                  onClick={() => setWomenExpanded(!womenExpanded)} 
+                  className="p-1 text-zinc-555 hover:text-white"
+                  aria-label="Toggle Women Subcategories"
+                >
+                  {womenExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+              </div>
+              
+              {womenExpanded && (
+                <div className="pl-4 flex flex-col gap-2 border-l border-zinc-900 ml-1 py-1">
+                  {["Casual", "Formal", "Digital", "Smart"].map(style => (
+                    <Link
+                      key={style}
+                      href={`/shop?gender=women&style=${style}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-[11px] text-zinc-500 hover:text-primary-gold transition-colors py-1 normal-case font-medium tracking-wide"
+                    >
+                      {style} Watches
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Kids Category */}
+            <div className="py-2 mt-2">
+              <Link 
+                href="/shop?gender=kids" 
+                onClick={() => setMobileMenuOpen(false)}
+                className="hover:text-white text-zinc-300 font-bold block"
+              >
+                Kids Only
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </header>

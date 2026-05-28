@@ -99,7 +99,7 @@ export default function Footer() {
         hour12: false
       };
 
-      setClocks(prev => 
+      setClocks(prev =>
         prev.map(clock => {
           try {
             const timeStr = new Intl.DateTimeFormat("en-US", {
@@ -121,7 +121,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#040404] border-t border-zinc-900 text-zinc-400 text-sm mt-auto">
-      
+
       {/* Dynamic Watchmaker Timezone Clocks */}
       <div className="border-b border-zinc-950 bg-[#060606] py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4 text-xs font-mono tracking-wider">
@@ -138,7 +138,7 @@ export default function Footer() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
-        
+
         {/* Brand Column */}
         <div className="space-y-4 col-span-1 md:col-span-2">
           <h3 className="text-lg font-serif text-white tracking-widest uppercase">Pixel & Parcel</h3>
@@ -152,11 +152,11 @@ export default function Footer() {
             </p>
             <p className="flex items-center gap-2">
               <span className="text-[10px] uppercase font-bold text-primary-gold tracking-widest font-mono">Email:</span>
-              <a href="mailto:concierge@pixelparcel.com" className="hover:text-primary-gold transition-colors">concierge@pixelparcel.com</a>
+              <a href="mailto:concierge@pixelparcel.com" className="hover:text-primary-gold transition-colors">pixelparcelindia@gmail.com</a>
             </p>
             <p className="flex items-center gap-2">
               <span className="text-[10px] uppercase font-bold text-primary-gold tracking-widest font-mono">Telephone:</span>
-              <a href="tel:+912269829826" className="hover:text-primary-gold transition-colors">+91 22 6982 9826</a>
+              <a href="tel:+912269829826" className="hover:text-primary-gold transition-colors">+91 8950820757</a>
             </p>
           </div>
           <div className="flex items-center gap-4 pt-2">

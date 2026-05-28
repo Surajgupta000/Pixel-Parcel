@@ -20,7 +20,19 @@ function ShopContent() {
     const local = localStorage.getItem("pp_products");
     if (local) {
       try {
-        setProductsList(JSON.parse(local));
+        const parsed = JSON.parse(local);
+        const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
+        const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
+        const sanitized = parsed.map((p: any) => {
+          const cleanImg = isValidUrl(p.imageUrl) ? p.imageUrl.trim() : fallback;
+          const cleanImages = Array.isArray(p.images) ? p.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
+          return {
+            ...p,
+            imageUrl: cleanImg,
+            images: cleanImages.length > 0 ? cleanImages : [cleanImg]
+          };
+        });
+        setProductsList(sanitized);
       } catch (e) {
         console.error("Error loading products from localStorage", e);
       }
@@ -38,8 +50,10 @@ function ShopContent() {
   // Mobile filter panel toggle
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Sync with searchParams (e.g. wishlist filter)
+  // Sync with searchParams (e.g. wishlist, gender, style filters)
   const isWishlistOnly = searchParams.get("filter") === "wishlist";
+  const paramGender = searchParams.get("gender");
+  const paramStyle = searchParams.get("style");
 
   const handleToggleMovement = (mov: string) => {
     setSelectedMovements(prev =>
@@ -59,6 +73,41 @@ function ShopContent() {
     );
   };
 
+  // Local helper to parse watch genders
+  const getWatchGenders = (w: WatchProduct): string[] => {
+    if (!w.gender) {
+      if (w.id === "chronos-horizon" || w.id === "vanguard-classic" || w.id === "apex-mariner" || w.id === "nt3099sl01" || w.id === "stealth-pulse") {
+        return ["men"];
+      }
+      if (w.id === "celestial-eclipse" || w.id === "aura-rose") {
+        return ["women"];
+      }
+      return ["kids"];
+    }
+
+    const gLower = w.gender.toLowerCase();
+    const parts = gLower.split(/[,;\s]+/).map(p => p.trim()).filter(Boolean);
+    const genders: string[] = [];
+
+    parts.forEach(part => {
+      if (part === "guys" || part === "men" || part === "gentlemen" || part === "mens") {
+        if (!genders.includes("men")) genders.push("men");
+      } else if (part === "ladies" || part === "women" || part === "womens") {
+        if (!genders.includes("women")) genders.push("women");
+      } else if (part === "kids" || part === "boys" || part === "girls" || part === "children") {
+        if (!genders.includes("kids")) genders.push("kids");
+      } else if (part === "unisex") {
+        if (!genders.includes("men")) genders.push("men");
+        if (!genders.includes("women")) genders.push("women");
+      }
+    });
+
+    if (genders.length === 0) {
+      return ["kids"];
+    }
+    return genders;
+  };
+
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedMovements([]);
@@ -66,12 +115,16 @@ function ShopContent() {
     setSelectedCases([]);
     setMaxPrice(500000);
     setSortBy("default");
+    if (paramGender || paramStyle || isWishlistOnly) {
+      router.push("/shop");
+    }
   };
 
   // Active filter count badge
   const activeFiltersCount =
     selectedMovements.length + selectedStraps.length + selectedCases.length +
-    (maxPrice < 500000 ? 1 : 0) + (searchQuery ? 1 : 0);
+    (maxPrice < 500000 ? 1 : 0) + (searchQuery ? 1 : 0) +
+    (paramGender ? 1 : 0) + (paramStyle ? 1 : 0);
 
   // Filter and Sort calculation
   const filteredProducts = productsList.filter(watch => {
@@ -84,7 +137,11 @@ function ShopContent() {
     const matchesCase = selectedCases.length === 0 || selectedCases.includes(watch.caseMaterial);
     const matchesPrice = watch.price <= maxPrice;
     const matchesWishlist = !isWishlistOnly || wishlist.includes(watch.id);
-    return matchesSearch && matchesMovement && matchesStrap && matchesCase && matchesPrice && matchesWishlist;
+    
+    const matchesGender = !paramGender || getWatchGenders(watch).includes(paramGender.toLowerCase());
+    const matchesStyle = !paramStyle || (watch.style && watch.style.toLowerCase() === paramStyle.toLowerCase());
+
+    return matchesSearch && matchesMovement && matchesStrap && matchesCase && matchesPrice && matchesWishlist && matchesGender && matchesStyle;
   });
 
   // Sort
@@ -107,6 +164,47 @@ function ShopContent() {
   // Shared filter panel JSX (used in both sidebar and mobile drawer)
   const FilterPanel = () => (
     <div className="space-y-6">
+      {/* Active Query Filters Banner */}
+      {(paramGender || paramStyle) && (
+        <div className="bg-primary-gold/10 border border-primary-gold/25 rounded p-3 space-y-2 mb-4">
+          <p className="text-[10px] uppercase font-bold tracking-widest text-[#8C7853]">Active Collection</p>
+          <div className="flex flex-wrap gap-2">
+            {paramGender && (
+              <span className="text-[10px] font-sans font-bold bg-primary-gold text-black px-2 py-0.5 rounded capitalize flex items-center gap-1.5">
+                Gender: {paramGender}
+                <button 
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.delete("gender");
+                    router.push(`/shop?${params.toString()}`);
+                  }} 
+                  className="hover:text-red-700 font-extrabold cursor-pointer"
+                  title="Clear Gender Filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {paramStyle && (
+              <span className="text-[10px] font-sans font-bold bg-primary-gold text-black px-2 py-0.5 rounded capitalize flex items-center gap-1.5">
+                Style: {paramStyle}
+                <button 
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.delete("style");
+                    router.push(`/shop?${params.toString()}`);
+                  }} 
+                  className="hover:text-red-700 font-extrabold cursor-pointer"
+                  title="Clear Style Filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Search bar */}
       <div className="space-y-2">
         <label className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">Search Timepieces</label>
@@ -343,7 +441,7 @@ function ShopContent() {
                           src={watch.imageUrl}
                           alt={watch.name}
                           fill
-                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                          className="object-contain p-4 transition-transform duration-700 ease-out group-hover:scale-105"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
                         {/* Hover overlay with eye — navigates to full product page via Link parent */}
@@ -363,11 +461,10 @@ function ShopContent() {
                       <div>
                         <span className="text-[9px] font-mono uppercase text-zinc-600 tracking-widest">{watch.sku}</span>
                         <Link href={`/product/${watch.id}`}>
-                          <h4 className="font-serif text-white text-sm sm:text-base leading-tight hover:text-primary-gold transition-colors line-clamp-2">
+                          <h4 className="font-serif text-white text-sm sm:text-base leading-tight hover:text-primary-gold transition-colors line-clamp-2 font-semibold">
                             {watch.name}
                           </h4>
                         </Link>
-                        <p className="text-[11px] text-zinc-550 font-light truncate mt-0.5">{watch.tagline}</p>
                       </div>
 
                       <div className="flex justify-between items-center pt-3 border-t border-zinc-900 mt-3">

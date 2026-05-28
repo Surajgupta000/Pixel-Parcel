@@ -154,14 +154,13 @@ function ProductCard({ watch, wishlist, toggleWishlist, addToCompare, addToCart 
           <div 
             className="flex w-full h-full transition-transform duration-700 ease-in-out"
             style={{ transform: `translate3d(-${currentIdx * 100}%, 0, 0)` }}
-          >
-            {images.map((img, idx) => (
+          >            {images.map((img, idx) => (
               <div key={img + "-" + idx} className="w-full h-full flex-shrink-0 relative">
                 <Image 
                   src={img} 
                   alt={watch.name}
                   fill
-                  className="object-cover"
+                  className="object-contain p-4"
                   sizes="(max-w-7xl) 25vw, 100vw"
                 />
               </div>
@@ -180,7 +179,6 @@ function ProductCard({ watch, wishlist, toggleWishlist, addToCompare, addToCart 
           <Link href={`/product/${watch.id}`}>
             <h4 className="font-serif text-white text-base leading-tight hover:text-primary-gold transition-colors font-semibold">{watch.name}</h4>
           </Link>
-          <p className="text-[11px] text-zinc-555 font-light truncate">{watch.tagline}</p>
           
           <div className="flex justify-between items-center pt-3 border-t border-zinc-950 mt-2">
             <span className="text-primary-gold font-bold text-sm">₹{watch.price.toLocaleString("en-IN")}</span>
@@ -215,7 +213,19 @@ export default function HomePage() {
     const local = localStorage.getItem("pp_products");
     if (local) {
       try {
-        setProductsList(JSON.parse(local));
+        const parsed = JSON.parse(local);
+        const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
+        const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
+        const sanitized = parsed.map((p: any) => {
+          const cleanImg = isValidUrl(p.imageUrl) ? p.imageUrl.trim() : fallback;
+          const cleanImages = Array.isArray(p.images) ? p.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
+          return {
+            ...p,
+            imageUrl: cleanImg,
+            images: cleanImages.length > 0 ? cleanImages : [cleanImg]
+          };
+        });
+        setProductsList(sanitized);
       } catch (e) {
         console.error("Error loading products on homepage", e);
       }
@@ -227,8 +237,8 @@ export default function HomePage() {
   const [menActiveSub, setMenActiveSub] = useState<number | null>(null);
   const [womenActiveSection, setWomenActiveSection] = useState(0);
   const [womenActiveSub, setWomenActiveSub] = useState<number | null>(null);
-  const [unisexActiveSection, setUnisexActiveSection] = useState(0);
-  const [unisexActiveSub, setUnisexActiveSub] = useState<number | null>(null);
+  const [kidsActiveSection, setKidsActiveSection] = useState(0);
+  const [kidsActiveSub, setKidsActiveSub] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
 
@@ -371,23 +381,40 @@ export default function HomePage() {
   // Filter sections
   const homeSections = sections;
 
-  // Filter products by gender group helper
-  const getWatchGender = (w: WatchProduct): "men" | "women" | "unisex" | "kids" => {
-    if (w.gender) {
-      const g = w.gender.toLowerCase();
-      if (g === "guys" || g === "men" || g === "gentlemen") return "men";
-      if (g === "ladies" || g === "women") return "women";
-      if (g === "kids" || g === "boys" || g === "girls" || g === "children") return "kids";
-      if (g === "unisex") return "unisex";
+  // Filter products by gender group helper (supports multi-selection)
+  const getWatchGenders = (w: WatchProduct): string[] => {
+    if (!w.gender) {
+      // Fallback for static watches
+      if (w.id === "chronos-horizon" || w.id === "vanguard-classic" || w.id === "apex-mariner" || w.id === "nt3099sl01" || w.id === "stealth-pulse") {
+        return ["men"];
+      }
+      if (w.id === "celestial-eclipse" || w.id === "aura-rose") {
+        return ["women"];
+      }
+      return ["kids"];
     }
-    // Fallback for static watches
-    if (w.id === "chronos-horizon" || w.id === "vanguard-classic" || w.id === "apex-mariner" || w.id === "nt3099sl01" || w.id === "stealth-pulse") {
-      return "men";
+
+    const gLower = w.gender.toLowerCase();
+    const parts = gLower.split(/[,;\s]+/).map(p => p.trim()).filter(Boolean);
+    const genders: string[] = [];
+
+    parts.forEach(part => {
+      if (part === "guys" || part === "men" || part === "gentlemen" || part === "mens") {
+        if (!genders.includes("men")) genders.push("men");
+      } else if (part === "ladies" || part === "women" || part === "womens") {
+        if (!genders.includes("women")) genders.push("women");
+      } else if (part === "kids" || part === "boys" || part === "girls" || part === "children") {
+        if (!genders.includes("kids")) genders.push("kids");
+      } else if (part === "unisex") {
+        if (!genders.includes("men")) genders.push("men");
+        if (!genders.includes("women")) genders.push("women");
+      }
+    });
+
+    if (genders.length === 0) {
+      return ["kids"];
     }
-    if (w.id === "celestial-eclipse" || w.id === "aura-rose") {
-      return "women";
-    }
-    return "unisex";
+    return genders;
   };
 
   // Helper to filter watches based on active tab and style option
@@ -415,16 +442,16 @@ export default function HomePage() {
   };
 
   // Men
-  const menWatches = productsList.filter((w) => getWatchGender(w) === "men");
+  const menWatches = productsList.filter((w) => getWatchGenders(w).includes("men"));
   const displayMenProducts = getFilteredProducts(menWatches, menActiveSection, menActiveSub).slice(0, 8);
 
   // Women
-  const womenWatches = productsList.filter((w) => getWatchGender(w) === "women");
+  const womenWatches = productsList.filter((w) => getWatchGenders(w).includes("women"));
   const displayWomenProducts = getFilteredProducts(womenWatches, womenActiveSection, womenActiveSub).slice(0, 8);
 
-  // Unisex & Kids
-  const unisexWatches = productsList.filter((w) => getWatchGender(w) === "unisex" || getWatchGender(w) === "kids");
-  const displayUnisexProducts = getFilteredProducts(unisexWatches, unisexActiveSection, unisexActiveSub).slice(0, 8);
+  // Kids
+  const kidsWatches = productsList.filter((w) => getWatchGenders(w).includes("kids"));
+  const displayKidsProducts = getFilteredProducts(kidsWatches, kidsActiveSection, kidsActiveSub).slice(0, 8);
 
   const renderWatchCard = (watch: WatchProduct) => {
     return (
@@ -695,16 +722,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3C. MODERNIST HORIZON (UNISEX) */}
+      {/* 3C. MODERNIST HORIZON (KIDS) */}
       <section className="py-24 bg-[#0A0A0A] border-b border-zinc-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           
           {/* Header & Categories Menu */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-4 border-b border-zinc-900">
             <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-gold block">Modernist &amp; Youth Horizon</span>
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-white tracking-wide">The Unisex &amp; Kids Collection</h3>
-              <p className="text-xs text-zinc-400 max-w-lg font-light">Sleek grade-5 titanium, avant-garde openwork skeletonization, and premium watches designed for everyone, including children.</p>
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-gold block">Youth Calibers</span>
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-white tracking-wide">The Kids Collection</h3>
+              <p className="text-xs text-zinc-400 max-w-lg font-light">Playful designs, robust casing, and premium timepieces designed specifically for children.</p>
             </div>
             
             {/* Interactive Luxury Section Tabs — scrollable on mobile */}
@@ -713,15 +740,15 @@ export default function HomePage() {
                 <button
                   key={sect.name}
                   onMouseEnter={() => {
-                    setUnisexActiveSection(idx);
-                    setUnisexActiveSub(null);
+                    setKidsActiveSection(idx);
+                    setKidsActiveSub(null);
                   }}
                   onClick={() => {
-                    setUnisexActiveSection(idx);
-                    setUnisexActiveSub(null);
+                    setKidsActiveSection(idx);
+                    setKidsActiveSub(null);
                   }}
                   className={`px-3 sm:px-4 py-2 rounded transition-colors duration-300 whitespace-nowrap flex-shrink-0 ${
-                    unisexActiveSection === idx 
+                    kidsActiveSection === idx 
                       ? "bg-primary-gold text-black" 
                       : "text-zinc-500 hover:text-white"
                   }`}
@@ -733,15 +760,15 @@ export default function HomePage() {
           </div>
 
           {/* Sub-Category Bar */}
-          {homeSections[unisexActiveSection].subCategories.length > 0 && (
+          {homeSections[kidsActiveSection].subCategories.length > 0 && (
             <div className="flex flex-wrap gap-2 justify-center lg:justify-start animate-fade-in">
-              {homeSections[unisexActiveSection].subCategories.map((sub, sIdx) => (
+              {homeSections[kidsActiveSection].subCategories.map((sub, sIdx) => (
                 <button
                   key={sub.name}
-                  onMouseEnter={() => setUnisexActiveSub(sIdx)}
-                  onClick={() => setUnisexActiveSub(sIdx)}
+                  onMouseEnter={() => setKidsActiveSub(sIdx)}
+                  onClick={() => setKidsActiveSub(sIdx)}
                   className={`px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-full border transition-all duration-300 ${
-                    unisexActiveSub === sIdx
+                    kidsActiveSub === sIdx
                       ? "border-primary-gold bg-primary-gold/15 text-primary-gold"
                       : "border-zinc-900 bg-transparent text-zinc-500 hover:text-zinc-350 hover:border-zinc-800"
                   }`}
@@ -754,8 +781,8 @@ export default function HomePage() {
 
           {/* Product grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px]">
-            {displayUnisexProducts.length > 0 ? (
-              displayUnisexProducts.map((watch) => renderWatchCard(watch))
+            {displayKidsProducts.length > 0 ? (
+              displayKidsProducts.map((watch) => renderWatchCard(watch))
             ) : (
               <div className="w-full flex flex-col items-center justify-center py-16 text-zinc-500 text-sm italic">
                 No timepieces found in this category.

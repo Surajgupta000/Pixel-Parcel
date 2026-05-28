@@ -182,7 +182,7 @@ export const useStore = create<AppState>((set, get) => {
       set({ exitIntentSeen: seen });
     },
 
-    theme: 'dark',
+    theme: 'light',
     toggleTheme: () => {
       const nextTheme = get().theme === 'light' ? 'dark' : 'light';
       set({ theme: nextTheme });

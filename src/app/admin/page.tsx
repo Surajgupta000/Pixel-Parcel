@@ -20,6 +20,9 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeTab, setActiveTab] = useState<"stats" | "products" | "addProduct" | "orders">("stats");
 
+  // Selection states for catalog management
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+
   // Cloudinary image upload loading states
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [uploadingPrimary, setUploadingPrimary] = useState<boolean>(false);
@@ -52,7 +55,7 @@ export default function AdminPage() {
     stock: 1,
     description: "",
     displayBrand: "",
-    gender: "Guys",
+    gender: "Men",
     glassMaterial: "Mineral Glass",
     strapColor: "Brown",
     function: "Analog",
@@ -70,7 +73,25 @@ export default function AdminPage() {
   useEffect(() => {
     const localProds = localStorage.getItem("pp_products");
     if (localProds) {
-      setProductsList(JSON.parse(localProds));
+      try {
+        const parsed = JSON.parse(localProds);
+        const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
+        const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
+        const sanitized = parsed.map((p: any) => {
+          const cleanImg = isValidUrl(p.imageUrl) ? p.imageUrl.trim() : fallback;
+          const cleanImages = Array.isArray(p.images) ? p.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
+          return {
+            ...p,
+            imageUrl: cleanImg,
+            images: cleanImages.length > 0 ? cleanImages : [cleanImg]
+          };
+        });
+        setProductsList(sanitized);
+        localStorage.setItem("pp_products", JSON.stringify(sanitized));
+      } catch (err) {
+        console.error("Error loading/sanitizing products in admin", err);
+        setProductsList(initialProducts);
+      }
     } else {
       setProductsList(initialProducts);
       localStorage.setItem("pp_products", JSON.stringify(initialProducts));
@@ -118,6 +139,32 @@ export default function AdminPage() {
     });
   };
 
+  const isGenderChecked = (genderVal: string) => {
+    if (!formWatch.gender) return false;
+    return formWatch.gender.split(/[,;\s]+/).map(g => g.trim().toLowerCase()).includes(genderVal.toLowerCase());
+  };
+
+  const handleGenderCheckboxChange = (genderVal: string, checked: boolean) => {
+    let currentGenders = formWatch.gender 
+      ? formWatch.gender.split(/[,;\s]+/).map(g => g.trim()).filter(Boolean) 
+      : [];
+    
+    const matchVal = genderVal.charAt(0).toUpperCase() + genderVal.slice(1).toLowerCase();
+
+    if (checked) {
+      if (!currentGenders.includes(matchVal)) {
+        currentGenders.push(matchVal);
+      }
+    } else {
+      currentGenders = currentGenders.filter(g => g.toLowerCase() !== genderVal.toLowerCase());
+    }
+
+    setFormWatch({
+      ...formWatch,
+      gender: currentGenders.join(", ")
+    });
+  };
+
   const handleImageChange = (index: number, val: string) => {
     const newImages = [...(formWatch.images || ["", "", "", "", "", ""])];
     newImages[index] = val;
@@ -146,10 +193,10 @@ export default function AdminPage() {
         alert("Please enter a Watch Name before submitting.");
         return;
       }
-      if (!formWatch.sku || formWatch.sku.trim() === "") {
-        alert("Please enter a SKU Code before submitting.");
-        return;
-      }
+
+      const derivedSku = formWatch.sku && formWatch.sku.trim() !== ""
+        ? formWatch.sku.trim().toUpperCase()
+        : `PP-${(formWatch.name || "WATCH").trim().toUpperCase().replace(/\s+/g, "-")}-${Math.floor(1000 + Math.random() * 9000)}`;
 
       // Clean up empty images
       const cleanedImages = (formWatch.images || []).filter(img => img && img.trim() !== "");
@@ -165,7 +212,7 @@ export default function AdminPage() {
         tagline: (formWatch.tagline || "").trim(),
         price: Number(formWatch.price) || 0,
         movement: formWatch.movement || "Automatic",
-        caliber: (formWatch.caliber || formWatch.sku || "Unknown").trim(),
+        caliber: (formWatch.caliber || derivedSku).trim(),
         caseMaterial: formWatch.caseMaterial || "Stainless Steel",
         strapMaterial: formWatch.strapMaterial || "Leather",
         strapDetails: (formWatch.strapDetails || "").trim(),
@@ -177,7 +224,7 @@ export default function AdminPage() {
         jewels: Number(formWatch.jewels) || 0,
         imageUrl: primaryImage,
         localImage: "",                              // required field — always set
-        sku: (formWatch.sku || "").trim().toUpperCase(),
+        sku: derivedSku,
         stock: Number(formWatch.stock) || 0,
         description: (formWatch.description || "").trim(),
         rating: 5.0,
@@ -266,7 +313,7 @@ export default function AdminPage() {
         stock: 1,
         description: "",
         displayBrand: "",
-        gender: "Guys",
+        gender: "Men",
         glassMaterial: "Mineral Glass",
         strapColor: "Brown",
         function: "Analog",
@@ -413,34 +460,185 @@ export default function AdminPage() {
     document.body.removeChild(link);
   };
 
+  const exportActiveProductsCSV = () => {
+    const headers = [
+      "Name",
+      "Tagline",
+      "Price",
+      "Movement",
+      "Caliber",
+      "Case Material",
+      "Strap Type",
+      "Strap Details",
+      "Water Resistance",
+      "Dial Color",
+      "Case Diameter",
+      "Thickness",
+      "Power Reserve",
+      "Jewels",
+      "Image URL",
+      "SKU",
+      "Stock",
+      "Description",
+      "Display Brand",
+      "Gender",
+      "Glass Material",
+      "Strap Color",
+      "Function",
+      "Lock Mechanism",
+      "Case Shape",
+      "Case Length",
+      "Case Width",
+      "Gallery Images",
+      "Style",
+      "Is New Arrival",
+      "Is Summer Sale"
+    ];
+
+    const escapeCSV = (val: any) => {
+      const str = val === undefined || val === null ? "" : String(val);
+      if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const rows = productsList.map(p => [
+      p.name || "",
+      p.tagline || "",
+      p.price || 0,
+      p.movement || "",
+      p.caliber || "",
+      p.caseMaterial || "",
+      p.strapMaterial || "",
+      p.strapDetails || "",
+      p.waterResistance || "",
+      p.dialColor || "",
+      p.caseDiameter || "",
+      p.thickness || "",
+      p.powerReserve || "",
+      p.jewels || 0,
+      p.imageUrl || "",
+      p.sku || "",
+      p.stock || 0,
+      p.description || "",
+      p.displayBrand || "",
+      p.gender || "",
+      p.glassMaterial || "",
+      p.strapColor || "",
+      p.function || "",
+      p.lockMechanism || "",
+      p.caseShape || "",
+      p.caseLength || "",
+      p.caseWidth || "",
+      (p.images || []).join(";"),
+      p.style || "",
+      p.isNewArrival ? "true" : "false",
+      p.isSummerSale ? "true" : "false"
+    ]);
+
+    const csvContent = [
+      headers.map(escapeCSV).join(","),
+      ...rows.map(row => row.map(escapeCSV).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "timepieces_catalog.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const parseCSV = (text: string) => {
     const lines: string[][] = [];
-    let row: string[] = [""];
-    let inQuotes = false;
-    
-    for (let i = 0; i < text.length; i++) {
-      const c = text[i];
-      const next = text[i+1];
-      if (c === '"') {
-        if (inQuotes && next === '"') {
-          row[row.length - 1] += '"';
+    const cleanText = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    let i = 0;
+    const len = cleanText.length;
+
+    while (i < len) {
+      const row: string[] = [];
+      
+      // Parse a row
+      while (i < len) {
+        // Skip leading whitespace before field
+        while (i < len && (cleanText[i] === ' ' || cleanText[i] === '\t')) {
           i++;
-        } else {
-          inQuotes = !inQuotes;
         }
-      } else if (c === ',' && !inQuotes) {
-        row.push("");
-      } else if ((c === '\r' || c === '\n') && !inQuotes) {
-        if (c === '\r' && next === '\n') i++;
-        lines.push(row);
-        row = [""];
-      } else {
-        row[row.length - 1] += c;
+        
+        let field = "";
+        if (i < len && (cleanText[i] === '"' || cleanText[i] === '“' || cleanText[i] === '”')) {
+          // Quoted field (supporting standard and smart quotes)
+          const quoteChar = cleanText[i];
+          i++; // skip opening quote
+          while (i < len) {
+            const c = cleanText[i];
+            if (c === quoteChar) {
+              if (i + 1 < len && cleanText[i + 1] === quoteChar) {
+                // Escaped quote
+                field += quoteChar;
+                i += 2;
+              } else {
+                // Lookahead check: true closing quote if followed by delimiter, newline, or EOF
+                let lookAheadIdx = i + 1;
+                while (lookAheadIdx < len && (cleanText[lookAheadIdx] === ' ' || cleanText[lookAheadIdx] === '\t')) {
+                  lookAheadIdx++;
+                }
+                const nextChar = lookAheadIdx < len ? cleanText[lookAheadIdx] : '\n';
+                if (nextChar === ',' || nextChar === '\n') {
+                  i = lookAheadIdx; // skip past quote and any whitespace
+                  break;
+                } else {
+                  // Treat as literal quote inside the field
+                  field += quoteChar;
+                  i++;
+                }
+              }
+            } else {
+              field += c;
+              i++;
+            }
+          }
+          // After closing quote, skip until comma or newline (handles trailing characters safely)
+          while (i < len && cleanText[i] !== ',' && cleanText[i] !== '\n') {
+            i++;
+          }
+        } else {
+          // Unquoted field
+          while (i < len && cleanText[i] !== ',' && cleanText[i] !== '\n') {
+            field += cleanText[i];
+            i++;
+          }
+        }
+        
+        row.push(field);
+        
+        if (i < len && cleanText[i] === ',') {
+          i++; // skip comma
+          if (i === len || cleanText[i] === '\n') {
+            row.push("");
+          }
+        } else if (i < len && cleanText[i] === '\n') {
+          i++; // skip newline
+          break; // end of row
+        }
       }
-    }
-    if (row.length > 1 || row[0] !== "") {
       lines.push(row);
     }
+    
+    // Clean up empty lines at the end
+    while (lines.length > 0) {
+      const last = lines[lines.length - 1];
+      if (last.length === 0 || (last.length === 1 && last[0].trim() === "")) {
+        lines.pop();
+      } else {
+        break;
+      }
+    }
+    
     return lines;
   };
 
@@ -454,11 +652,12 @@ export default function AdminPage() {
       const csvHeaders = rows[0].map(h => h.trim().toLowerCase());
 
       const newProducts: WatchProduct[] = [];
+      const skippedRows: { rowNum: number; reason: string; rowData: string[] }[] = [];
 
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
-        // Skip completely empty rows; allow rows shorter than header (trailing columns may be empty)
-        if (row.length === 0 || (row.length === 1 && row[0] === "")) continue;
+        // Skip completely empty rows
+        if (row.length === 0 || (row.length === 1 && row[0].trim() === "")) continue;
 
         const watch: Partial<WatchProduct> = {};
         const galleryUrls: string[] = [];
@@ -519,47 +718,104 @@ export default function AdminPage() {
           }
         });
 
-        // Resolve images list from multiple columns if available
+        // Resolve images list from all available columns/fields
+        const collectedImages: string[] = [];
         if (primaryImg) {
-          const collectedImages = [primaryImg];
-          galleryUrls.forEach(url => {
-            if (url && !collectedImages.includes(url)) {
-              collectedImages.push(url);
-            }
-          });
-          watch.images = collectedImages;
+          collectedImages.push(primaryImg);
         }
 
-        if (!watch.name || watch.name.trim() === "") continue;
+        // Add images from the "gallery images" semicolon-separated field if any
+        if (watch.images) {
+          watch.images.forEach(img => {
+            if (img && !collectedImages.includes(img)) {
+              collectedImages.push(img);
+            }
+          });
+        }
+
+        // Add images from the individual "image url-2", "image url-3", etc. columns if any
+        galleryUrls.forEach(url => {
+          if (url && !collectedImages.includes(url)) {
+            collectedImages.push(url);
+          }
+        });
+
+        // If primary image is blank, default to the first image found in gallery
+        if (!primaryImg && collectedImages.length > 0) {
+          primaryImg = collectedImages[0];
+          watch.imageUrl = primaryImg;
+        }
+
+        watch.images = collectedImages;
+
+        if (!watch.name || watch.name.trim() === "") {
+          skippedRows.push({ rowNum: i + 1, reason: "Product Name is missing or empty", rowData: row });
+          continue;
+        }
+
+        const isValidUrl = (url: any) => {
+          if (typeof url !== "string") return false;
+          const u = url.trim();
+          return u.startsWith("http://") || u.startsWith("https://") || u.startsWith("/");
+        };
 
         const fallbackImageUrl = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
-        const resolvedImageUrl = watch.imageUrl && watch.imageUrl.trim() !== "" ? watch.imageUrl : fallbackImageUrl;
+        let resolvedImageUrl = watch.imageUrl && watch.imageUrl.trim() !== "" ? watch.imageUrl.trim() : "";
+
+        // Validate the main image URL; if invalid, attempt fallback to gallery or default
+        if (resolvedImageUrl && !isValidUrl(resolvedImageUrl)) {
+          let firstValidGallery = "";
+          if (watch.images) {
+            const found = watch.images.find(img => isValidUrl(img));
+            if (found) firstValidGallery = found;
+          }
+
+          skippedRows.push({
+            rowNum: i + 1,
+            reason: `Invalid main image URL discarded ("${resolvedImageUrl.substring(0, 30)}...")`,
+            rowData: row
+          });
+
+          resolvedImageUrl = firstValidGallery;
+        }
+
+        if (!resolvedImageUrl) {
+          resolvedImageUrl = fallbackImageUrl;
+        }
+
+        // Validate gallery images
+        let resolvedImages = (watch.images || []).filter(img => isValidUrl(img));
+        if (resolvedImages.length === 0) {
+          resolvedImages = [resolvedImageUrl];
+        } else if (!resolvedImages.includes(resolvedImageUrl) && resolvedImageUrl !== fallbackImageUrl) {
+          resolvedImages.unshift(resolvedImageUrl);
+        }
 
         const newId = watch.sku
           ? watch.sku.trim().toLowerCase().replace(/\s+/g, "-")
-          : watch.name.toLowerCase().replace(/\s+/g, "-");
+          : (watch.name || "temp").toLowerCase().replace(/\s+/g, "-");
 
         const finalWatch: WatchProduct = {
           id: newId,
-          name: watch.name.trim(),
-          tagline: watch.tagline || "",
+          name: (watch.name || "").trim(),
+          tagline: (watch.tagline || "").trim(),
           price: watch.price || 0,
           movement: watch.movement || "Quartz",
-          caliber: watch.caliber || watch.sku || "Unknown",
+          caliber: (watch.caliber || watch.sku || "Unknown").trim(),
           caseMaterial: watch.caseMaterial || "Metal",
           strapMaterial: watch.strapMaterial || "Leather",
-          strapDetails: watch.strapDetails || "",
+          strapDetails: (watch.strapDetails || "").trim(),
           waterResistance: watch.waterResistance || "30m (3 ATM)",
           dialColor: watch.dialColor || "Silver",
           caseDiameter: watch.caseDiameter || "40mm",
           thickness: watch.thickness || "11mm",
           powerReserve: watch.powerReserve || "2 Years (Battery)",
-          jewels: watch.jewels || 0,
+          jewels: Number(watch.jewels) || 0,
           imageUrl: resolvedImageUrl,
           localImage: "",
           sku: (watch.sku || "").trim().toUpperCase(),
-          stock: watch.stock || 1,
-          description: watch.description || "",
+          stock: Number(watch.stock) || 0,
+          description: (watch.description || "").trim(),
           displayBrand: watch.displayBrand || "",
           gender: watch.gender || "",
           glassMaterial: watch.glassMaterial || "",
@@ -569,10 +825,7 @@ export default function AdminPage() {
           caseShape: watch.caseShape || "",
           caseLength: watch.caseLength || "",
           caseWidth: watch.caseWidth || "",
-          images:
-            watch.images && watch.images.length > 0
-              ? watch.images
-              : [resolvedImageUrl],
+          images: resolvedImages,
           rating: 5.0,
           reviewsCount: 0,
           reviews: [],
@@ -595,10 +848,25 @@ export default function AdminPage() {
           }
         });
         saveProductsToStorage(merged);
-        alert(`✅ Successfully imported ${newProducts.length} watch(es) into the vault!`);
+        
+        let msg = `✅ Successfully imported ${newProducts.length} product(s) into the catalog!`;
+        if (skippedRows.length > 0) {
+          msg += `\n\n⚠️ Note: ${skippedRows.length} row(s) were skipped:`;
+          skippedRows.forEach(sr => {
+            msg += `\n- Row ${sr.rowNum}: ${sr.reason} (First values: ${sr.rowData.slice(0, 3).join(", ")})`;
+          });
+        }
+        alert(msg);
         setActiveTab("products"); // show the updated inventory immediately
       } else {
-        alert("⚠️ No valid products found in the CSV. Make sure the 'Name' column is filled.");
+        let msg = "⚠️ No valid products found in the CSV. Make sure the 'Name' column is filled.";
+        if (skippedRows.length > 0) {
+          msg += `\n\nSkipped Row Details:`;
+          skippedRows.forEach(sr => {
+            msg += `\n- Row ${sr.rowNum}: ${sr.reason}`;
+          });
+        }
+        alert(msg);
       }
     } catch (error) {
       console.error("CSV import error:", error);
@@ -622,7 +890,142 @@ export default function AdminPage() {
     if (confirm("Are you sure you want to retire this timepiece from the active catalog?")) {
       const filtered = productsList.filter(p => p.id !== id);
       saveProductsToStorage(filtered);
+      setSelectedProductIds(prev => prev.filter(item => item !== id));
     }
+  };
+
+  const handleSelectRow = (id: string) => {
+    setSelectedProductIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProductIds.length === productsList.length) {
+      setSelectedProductIds([]);
+    } else {
+      setSelectedProductIds(productsList.map(p => p.id));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedProductIds.length === 0) return;
+    const count = selectedProductIds.length;
+    if (confirm(`Are you sure you want to retire the ${count} selected timepiece(s) from the active catalog?`)) {
+      const filtered = productsList.filter(p => !selectedProductIds.includes(p.id));
+      saveProductsToStorage(filtered);
+      setSelectedProductIds([]);
+      alert(`✅ Successfully removed ${count} timepiece(s) from the catalog.`);
+    }
+  };
+
+  const handleDeleteAllProducts = () => {
+    if (confirm("⚠️ WARNING: This will permanently delete ALL products in the catalog! This action cannot be undone.\n\nAre you sure you want to proceed?")) {
+      const confirmationText = prompt("Type 'DELETE ALL' to confirm:");
+      if (confirmationText === "DELETE ALL") {
+        saveProductsToStorage([]);
+        setSelectedProductIds([]);
+        alert("✅ All products have been retired from the catalog.");
+      } else {
+        alert("❌ Deletion cancelled. Confirmation code was incorrect.");
+      }
+    }
+  };
+
+  const handleBulkExport = () => {
+    if (selectedProductIds.length === 0) return;
+    
+    const headers = [
+      "Name",
+      "Tagline",
+      "Price",
+      "Movement",
+      "Caliber",
+      "Case Material",
+      "Strap Type",
+      "Strap Details",
+      "Water Resistance",
+      "Dial Color",
+      "Case Diameter",
+      "Thickness",
+      "Power Reserve",
+      "Jewels",
+      "Image URL",
+      "SKU",
+      "Stock",
+      "Description",
+      "Display Brand",
+      "Gender",
+      "Glass Material",
+      "Strap Color",
+      "Function",
+      "Lock Mechanism",
+      "Case Shape",
+      "Case Length",
+      "Case Width",
+      "Gallery Images",
+      "Style",
+      "Is New Arrival",
+      "Is Summer Sale"
+    ];
+
+    const escapeCSV = (val: any) => {
+      const str = val === undefined || val === null ? "" : String(val);
+      if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const selectedProducts = productsList.filter(p => selectedProductIds.includes(p.id));
+    const rows = selectedProducts.map(p => [
+      p.name || "",
+      p.tagline || "",
+      p.price || 0,
+      p.movement || "",
+      p.caliber || "",
+      p.caseMaterial || "",
+      p.strapMaterial || "",
+      p.strapDetails || "",
+      p.waterResistance || "",
+      p.dialColor || "",
+      p.caseDiameter || "",
+      p.thickness || "",
+      p.powerReserve || "",
+      p.jewels || 0,
+      p.imageUrl || "",
+      p.sku || "",
+      p.stock || 0,
+      p.description || "",
+      p.displayBrand || "",
+      p.gender || "",
+      p.glassMaterial || "",
+      p.strapColor || "",
+      p.function || "",
+      p.lockMechanism || "",
+      p.caseShape || "",
+      p.caseLength || "",
+      p.caseWidth || "",
+      (p.images || []).join(";"),
+      p.style || "",
+      p.isNewArrival ? "true" : "false",
+      p.isSummerSale ? "true" : "false"
+    ]);
+
+    const csvContent = [
+      headers.map(escapeCSV).join(","),
+      ...rows.map(row => row.map(escapeCSV).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `timepieces_selected_export_${Date.now()}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleUpdateOrderStatus = (orderId: string, newStatus: any) => {
@@ -647,9 +1050,9 @@ export default function AdminPage() {
     return (
       <div className="max-w-md mx-auto my-20 p-8 bg-[#0E0E0E] border border-zinc-900 rounded-lg shadow-2xl space-y-8 animate-fade-in">
         <div className="text-center space-y-2">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#8C7853] block">Secure Authorization</span>
-          <h2 className="text-2xl font-serif text-white tracking-widest uppercase">Atelier Login</h2>
-          <p className="text-xs text-zinc-550">Enter credentials to unlock inventory ledgers</p>
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#8C7853] block">Admin Security</span>
+          <h2 className="text-2xl font-serif text-white tracking-widest uppercase">Admin Login</h2>
+          <p className="text-xs text-zinc-555">Enter credentials to access the admin panel</p>
         </div>
 
         {loginError && (
@@ -660,7 +1063,7 @@ export default function AdminPage() {
 
         <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
           <div className="space-y-1">
-            <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">User ID Key</label>
+            <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Username</label>
             <input 
               type="text" 
               required
@@ -672,7 +1075,7 @@ export default function AdminPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Password Crypt</label>
+            <label className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider block">Password</label>
             <input 
               type="password" 
               required
@@ -687,7 +1090,7 @@ export default function AdminPage() {
             type="submit"
             className="w-full py-3 bg-primary-gold hover:bg-gold-light text-black text-xs font-bold uppercase tracking-widest transition-colors rounded shadow-lg shadow-primary-gold/5"
           >
-            Authenticate Access
+            Sign In
           </button>
         </form>
       </div>
@@ -700,8 +1103,8 @@ export default function AdminPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 pb-6 border-b border-zinc-900">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-serif text-white tracking-wider uppercase">Merchant Atelier</h1>
-          <p className="text-xs uppercase tracking-[0.2em] text-[#8C7853]">Manage catalog assets and order ledgers</p>
+          <h1 className="text-2xl sm:text-3xl font-serif text-white tracking-wider uppercase">Merchant Dashboard</h1>
+          <p className="text-xs uppercase tracking-[0.2em] text-[#8C7853]">Manage product catalog and order list</p>
         </div>
 
         {/* Tab Controls — scrollable on mobile */}
@@ -760,7 +1163,7 @@ export default function AdminPage() {
             {/* Metric 2 */}
             <div className="bg-[#0E0E0E] border border-zinc-900 rounded-lg p-5 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block mb-1">Acquisitions</span>
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block mb-1">Total Sales</span>
                 <span className="text-xl font-bold text-white">{orders.length + 14} orders</span>
               </div>
               <div className="bg-primary-gold/10 p-3 rounded-full border border-primary-gold/20 text-primary-gold">
@@ -771,7 +1174,7 @@ export default function AdminPage() {
             {/* Metric 3 */}
             <div className="bg-[#0E0E0E] border border-zinc-900 rounded-lg p-5 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block mb-1">Calibrations</span>
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold block mb-1">Pending Orders</span>
                 <span className="text-xl font-bold text-white">{pendingCalibrations} active</span>
               </div>
               <div className="bg-primary-gold/10 p-3 rounded-full border border-primary-gold/20 text-primary-gold">
@@ -796,7 +1199,7 @@ export default function AdminPage() {
 
           {/* Quick Analytics overview */}
           <div className="bg-[#0E0E0E] border border-zinc-900 rounded-lg p-6 space-y-4">
-            <h3 className="text-lg font-serif text-white tracking-wide">Historical Ledgers</h3>
+            <h3 className="text-lg font-serif text-white tracking-wide">Dashboard Information</h3>
             <p className="text-xs text-zinc-500 leading-relaxed font-light">
               This dashboard operates in simulation mode. Live order records from the sandbox Razorpay payments are saved to local storage database memory.
             </p>
@@ -808,67 +1211,174 @@ export default function AdminPage() {
       {activeTab === "products" && (
         <div className="space-y-6 animate-fade-in">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
-            <h3 className="text-lg font-serif text-white tracking-wide">Caliber Inventory ({productsList.length})</h3>
+            <div>
+              <h3 className="text-lg font-serif text-white tracking-wide">Product Inventory</h3>
+              <p className="text-[11px] text-zinc-500 font-light mt-0.5">Manage, edit, or bulk export/delete active products</p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Total: {productsList.length} Models</span>
+              {productsList.length > 0 && (
+                <button
+                  onClick={handleDeleteAllProducts}
+                  className="px-3 py-1.5 bg-red-950/20 border border-red-900/30 hover:bg-red-900/40 hover:border-red-900 text-red-400 hover:text-red-300 text-[10px] font-bold uppercase tracking-widest transition-all duration-200 rounded"
+                >
+                  Delete All Products
+                </button>
+              )}
+            </div>
           </div>
 
+          {/* BULK ACTION BAR */}
+          {selectedProductIds.length > 0 && (
+            <div className="flex flex-col sm:flex-row justify-between items-center bg-[#0E0E0E] border border-primary-gold/30 p-4 rounded-lg gap-4 animate-fade-in shadow-md">
+              <div className="flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-primary-gold animate-pulse"></span>
+                <span className="text-xs text-zinc-300 font-medium">
+                  <strong className="text-white">{selectedProductIds.length}</strong> product(s) selected
+                </span>
+              </div>
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                <button
+                  onClick={() => setSelectedProductIds([])}
+                  className="px-3.5 py-1.5 border border-zinc-800 hover:border-zinc-700 text-zinc-450 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors rounded"
+                >
+                  Clear Selection
+                </button>
+                <button
+                  onClick={handleBulkExport}
+                  className="px-3.5 py-1.5 bg-primary-gold hover:bg-gold-light text-black text-[10px] font-bold uppercase tracking-widest transition-colors rounded flex items-center gap-1.5 shadow-sm"
+                >
+                  Export Selected
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest transition-colors rounded shadow-sm"
+                >
+                  Delete Selected
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="bg-[#0E0E0E] border border-zinc-900 rounded-lg overflow-hidden overflow-x-auto">
-            <table className="w-full min-w-[640px] text-xs text-[#F5F5F7]">
+            <table className="w-full min-w-[768px] text-xs text-[#F5F5F7]">
               <thead>
                 <tr className="bg-zinc-950/80 border-b border-zinc-900 text-left text-[9px] uppercase font-bold text-zinc-550 tracking-wider">
-                  <th className="p-4">Watch</th>
-                  <th className="p-4">SKU</th>
-                  <th className="p-4">Specs</th>
+                  <th className="p-4 text-center w-12">
+                    <input 
+                      type="checkbox"
+                      checked={productsList.length > 0 && selectedProductIds.length === productsList.length}
+                      onChange={handleSelectAll}
+                      className="rounded border-zinc-800 accent-primary-gold bg-black cursor-pointer scale-110"
+                    />
+                  </th>
+                  <th className="p-4 text-center w-12">S.No.</th>
+                  <th className="p-4">Watch / Brand</th>
+                  <th className="p-4">SKU / Caliber</th>
+                  <th className="p-4">Specifications</th>
                   <th className="p-4">Price</th>
-                  <th className="p-4">Stock</th>
-                  <th className="p-4 text-center">Actions</th>
+                  <th className="p-4">Status & Stock</th>
+                  <th className="p-4 text-center w-28">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-900">
-                {productsList.map((prod) => (
-                  <tr key={prod.id} className="hover:bg-zinc-950/40 transition-colors">
-                    <td className="p-4 flex items-center gap-3">
-                      <div className="h-10 w-10 relative overflow-hidden rounded border border-zinc-900 flex-shrink-0 bg-zinc-950">
-                        <Image 
-                          src={prod.imageUrl} 
-                          alt={prod.name} 
-                          fill 
-                          className="object-cover" 
-                          sizes="40px"
+                {productsList.map((prod, index) => {
+                  const isSelected = selectedProductIds.includes(prod.id);
+                  const isLowStock = prod.stock <= 2 && prod.stock > 0;
+                  const isOutOfStock = prod.stock === 0;
+                  
+                  return (
+                    <tr 
+                      key={prod.id} 
+                      className={`transition-colors duration-250 ${
+                        isSelected 
+                          ? "bg-primary-gold/[0.02] hover:bg-primary-gold/[0.04]" 
+                          : "hover:bg-zinc-950/40"
+                      }`}
+                    >
+                      <td className="p-4 text-center">
+                        <input 
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleSelectRow(prod.id)}
+                          className="rounded border-zinc-800 accent-primary-gold bg-black cursor-pointer scale-110"
                         />
-                      </div>
-                      <span className="font-serif text-white text-sm font-semibold">{prod.name}</span>
-                    </td>
-                    <td className="p-4 font-mono text-[10px] text-zinc-500">{prod.sku}</td>
-                    <td className="p-4 text-zinc-400">
-                      <p>{prod.movement}</p>
-                      <p className="text-[10px] text-zinc-550">{prod.caseMaterial} | {prod.strapMaterial}</p>
-                    </td>
-                    <td className="p-4 text-primary-gold font-bold">₹{prod.price.toLocaleString("en-IN")}</td>
-                    <td className="p-4">
-                      <span className={`font-semibold ${prod.stock <= 2 ? "text-red-400 font-bold" : "text-zinc-400"}`}>
-                        {prod.stock} left
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <div className="flex gap-2 justify-center">
-                        <button 
-                          onClick={() => handleEditClick(prod)}
-                          className="p-1.5 bg-zinc-900 border border-zinc-800 text-zinc-450 hover:text-primary-gold rounded"
-                          title="Edit specs"
-                        >
-                          <Edit2 className="h-3.5 w-3.5" />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteProduct(prod.id)}
-                          className="p-1.5 bg-zinc-900 border border-zinc-800 text-zinc-450 hover:text-red-450 rounded"
-                          title="Remove timepiece"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="p-4 text-center font-mono text-zinc-550">{index + 1}</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 relative overflow-hidden rounded border border-zinc-900 flex-shrink-0 bg-zinc-950">
+                            <Image 
+                              src={prod.imageUrl} 
+                              alt={prod.name} 
+                              fill 
+                              className="object-cover" 
+                              sizes="40px"
+                            />
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="font-serif text-white text-sm font-semibold block leading-tight">{prod.name}</span>
+                            <span className="text-[10px] text-primary-gold/80 font-mono tracking-wider block">
+                              {prod.displayBrand || "Pixel & Parcel"} • {prod.style || "Casual"}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 font-mono text-[10px] text-zinc-500">
+                        <span className="text-zinc-400 block">{prod.sku}</span>
+                        <span className="text-zinc-600 block text-[9px] truncate max-w-[120px]">{prod.caliber || "N/A"}</span>
+                      </td>
+                      <td className="p-4 text-zinc-450 leading-relaxed space-y-0.5">
+                        <p>{prod.movement} ({prod.jewels || 0} Jewels)</p>
+                        <p className="text-[10px] text-zinc-550">
+                          {prod.dialColor} • {prod.caseDiameter} • {prod.thickness}
+                        </p>
+                      </td>
+                      <td className="p-4 text-primary-gold font-bold text-sm">
+                        ₹{prod.price.toLocaleString("en-IN")}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col gap-1">
+                          {isOutOfStock ? (
+                            <span className="px-2 py-0.5 bg-red-950/20 border border-red-500/20 text-red-400 text-[9px] font-bold uppercase tracking-wider rounded w-fit">
+                              Out of Stock
+                            </span>
+                          ) : isLowStock ? (
+                            <span className="px-2 py-0.5 bg-amber-950/20 border border-amber-500/20 text-amber-400 text-[9px] font-bold uppercase tracking-wider rounded w-fit">
+                              Low Stock
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-emerald-950/20 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase tracking-wider rounded w-fit">
+                              In Stock
+                            </span>
+                          )}
+                          <span className="text-[10px] text-zinc-500 pl-1">
+                            {prod.stock} piece(s) available
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-center">
+                        <div className="flex gap-2.5 justify-center">
+                          <button 
+                            onClick={() => handleEditClick(prod)}
+                            className="p-1.5 bg-zinc-900 border border-zinc-800 text-zinc-450 hover:text-primary-gold hover:border-primary-gold/30 rounded transition-all duration-200"
+                            title="Edit product"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteProduct(prod.id)}
+                            className="p-1.5 bg-zinc-900 border border-zinc-800 text-zinc-450 hover:text-red-400 hover:border-red-950 rounded transition-all duration-200"
+                            title="Delete product"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -880,15 +1390,15 @@ export default function AdminPage() {
         <div className="max-w-2xl mx-auto bg-[#0E0E0E] border border-zinc-900 p-6 md:p-8 rounded-lg space-y-6 animate-fade-in">
           <div className="flex justify-between items-center pb-2 border-b border-zinc-900">
             <h3 className="text-lg font-serif text-white tracking-wide">
-              {editingId ? "Update Timepiece Specs" : "Add Timepiece to Vault"}
+              {editingId ? "Edit Product Specs" : "Add Product"}
             </h3>
           </div>
 
           {/* CSV Import/Export Section */}
           <div className="p-4 bg-zinc-950 border border-zinc-900 rounded space-y-3">
-            <span className="text-[10px] uppercase font-bold text-primary-gold block tracking-wider font-mono">Direct Sheet Import / Export</span>
-            <p className="text-[11px] text-zinc-550 font-light leading-relaxed">
-              Quickly manage catalog data from a spreadsheet. Export our template sheet, populate it, and upload it back to import multiple models instantly.
+            <span className="text-[10px] uppercase font-bold text-primary-gold block tracking-wider font-mono">CSV Import / Export</span>
+            <p className="text-[11px] text-zinc-555 font-light leading-relaxed">
+              Manage product inventory using CSV sheets. Export the template, edit the file, and upload it to import products.
             </p>
             <div className="flex flex-wrap gap-2.5 pt-1">
               <button 
@@ -898,8 +1408,15 @@ export default function AdminPage() {
               >
                 Export CSV Template
               </button>
+              <button 
+                type="button"
+                onClick={exportActiveProductsCSV}
+                className="px-4 py-2 border border-zinc-800 hover:border-primary-gold text-zinc-400 hover:text-primary-gold text-[10px] font-bold uppercase tracking-widest transition-colors rounded"
+              >
+                Export Active Catalog
+              </button>
               <label className="px-4 py-2 bg-primary-gold hover:bg-gold-light text-black text-[10px] font-bold uppercase tracking-widest transition-colors rounded cursor-pointer text-center select-none">
-                Import CSV Sheet
+                Import CSV File
                 <input 
                   type="file" 
                   accept=".csv"
@@ -909,12 +1426,24 @@ export default function AdminPage() {
                     if (file) {
                       const reader = new FileReader();
                       reader.onload = (event) => {
-                        const text = event.target?.result as string;
-                        if (text) {
-                          importCSV(text);
+                        const buffer = event.target?.result as ArrayBuffer;
+                        if (buffer) {
+                          const bytes = new Uint8Array(buffer);
+                          let text = "";
+                          try {
+                            const utf8Decoder = new TextDecoder("utf-8", { fatal: true });
+                            text = utf8Decoder.decode(bytes);
+                          } catch (err) {
+                            // Fallback to Windows-1252 (standard Excel ANSI encoding) to preserve em-dashes and smart quotes
+                            const winDecoder = new TextDecoder("windows-1252");
+                            text = winDecoder.decode(bytes);
+                          }
+                          if (text) {
+                            importCSV(text);
+                          }
                         }
                       };
-                      reader.readAsText(file);
+                      reader.readAsArrayBuffer(file);
                     }
                   }}
                 />
@@ -1042,13 +1571,13 @@ export default function AdminPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[9px] uppercase font-bold text-zinc-500 block">SKU Code</label>
+                <label className="text-[9px] uppercase font-bold text-zinc-500 block">SKU Code <span className="text-zinc-600 normal-case font-normal">(optional — auto-generated if blank)</span></label>
                 <input 
                   type="text" 
                   name="sku"
-                  required
                   value={formWatch.sku || ""}
                   onChange={handleInputChange}
+                  placeholder="e.g. PP-CH-8921"
                   className="w-full bg-[#070707] border border-zinc-800 text-zinc-300 px-3 py-2 rounded focus:outline-none focus:border-primary-gold font-mono uppercase"
                 />
               </div>
@@ -1201,18 +1730,36 @@ export default function AdminPage() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[9px] uppercase font-bold text-zinc-500 block">Gender Group</label>
-                  <select 
-                    name="gender"
-                    value={formWatch.gender || "Guys"}
-                    onChange={handleInputChange}
-                    className="w-full bg-[#070707] border border-zinc-800 text-zinc-300 px-3 py-2 rounded focus:outline-none focus:border-primary-gold"
-                  >
-                    <option value="Guys">Guys</option>
-                    <option value="Ladies">Ladies</option>
-                    <option value="Unisex">Unisex</option>
-                    <option value="Kids">Kids</option>
-                  </select>
+                  <label className="text-[9px] uppercase font-bold text-zinc-500 block">Show in Sections (Select Multiple)</label>
+                  <div className="flex items-center gap-4 pt-2.5">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input 
+                        type="checkbox"
+                        checked={isGenderChecked("Men")}
+                        onChange={(e) => handleGenderCheckboxChange("Men", e.target.checked)}
+                        className="rounded border-zinc-800 accent-primary-gold bg-black scale-110"
+                      />
+                      <span className="text-[10px] font-bold uppercase text-zinc-400">Men</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input 
+                        type="checkbox"
+                        checked={isGenderChecked("Women")}
+                        onChange={(e) => handleGenderCheckboxChange("Women", e.target.checked)}
+                        className="rounded border-zinc-800 accent-primary-gold bg-black scale-110"
+                      />
+                      <span className="text-[10px] font-bold uppercase text-zinc-400">Women</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input 
+                        type="checkbox"
+                        checked={isGenderChecked("Kids")}
+                        onChange={(e) => handleGenderCheckboxChange("Kids", e.target.checked)}
+                        className="rounded border-zinc-800 accent-primary-gold bg-black scale-110"
+                      />
+                      <span className="text-[10px] font-bold uppercase text-zinc-400">Kids</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -1555,7 +2102,7 @@ export default function AdminPage() {
                       stock: 1,
                       description: "",
                       displayBrand: "",
-                      gender: "Guys",
+                      gender: "Men",
                       glassMaterial: "Mineral Glass",
                       strapColor: "Brown",
                       function: "Analog",
@@ -1576,7 +2123,7 @@ export default function AdminPage() {
                 type="submit" 
                 className="flex-grow-[1.5] py-2.5 bg-primary-gold hover:bg-gold-light text-black uppercase tracking-widest text-[10px] font-bold rounded shadow-md shadow-primary-gold/5"
               >
-                {editingId ? "Save Specs" : "Add Timepiece to Vault"}
+                {editingId ? "Save Specs" : "Add Product"}
               </button>
             </div>
           </form>
@@ -1586,11 +2133,11 @@ export default function AdminPage() {
       {/* 3. ORDERS LEDGER TAB */}
       {activeTab === "orders" && (
         <div className="space-y-6 animate-fade-in">
-          <h3 className="text-lg font-serif text-white tracking-wide">Acquisitions Orders Ledger</h3>
+          <h3 className="text-lg font-serif text-white tracking-wide">Order History</h3>
 
           {orders.length === 0 ? (
             <div className="border border-dashed border-zinc-850 rounded-lg py-20 text-center text-zinc-500">
-              No simulated transactions found in database cache.
+              No orders found in database.
             </div>
           ) : (
             <div className="space-y-4">
@@ -1617,9 +2164,9 @@ export default function AdminPage() {
                         }`}
                       >
                         <option value="Processing">Processing</option>
-                        <option value="Calibrating">Atelier Calibration</option>
-                        <option value="Shipped">Dispatched (Insured)</option>
-                        <option value="Delivered">Delivered & Sealed</option>
+                        <option value="Calibrating">Calibrating</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
                       </select>
                     </div>
                   </div>
@@ -1627,19 +2174,19 @@ export default function AdminPage() {
                   {/* Customer details */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                     <div>
-                      <span className="text-[9px] uppercase font-bold text-zinc-550 tracking-wider block">Acquired Client</span>
+                      <span className="text-[9px] uppercase font-bold text-zinc-555 tracking-wider block">Customer Details</span>
                       <p className="text-white font-semibold">{ord.customerName}</p>
                       <p className="text-zinc-500">{ord.customerEmail}</p>
                     </div>
                     <div>
-                      <span className="text-[9px] uppercase font-bold text-zinc-550 tracking-wider block">Acquisition Value</span>
+                      <span className="text-[9px] uppercase font-bold text-zinc-555 tracking-wider block">Order Total</span>
                       <p className="text-primary-gold font-bold text-base">₹{ord.total.toLocaleString("en-IN")}</p>
                     </div>
                   </div>
 
                   {/* Items list */}
                   <div className="bg-[#070707] border border-zinc-950 p-4 rounded text-xs space-y-2">
-                    <span className="text-[9px] uppercase font-bold text-zinc-650 tracking-wider block">Secured Assets</span>
+                    <span className="text-[9px] uppercase font-bold text-zinc-650 tracking-wider block">Purchased Items</span>
                     <div className="divide-y divide-zinc-900">
                       {ord.items.map((item, idx) => (
                         <div key={idx} className="py-2 flex justify-between">

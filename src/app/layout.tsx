@@ -58,7 +58,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: `
           try {
             const savedTheme = localStorage.getItem('pp_theme');
-            const parsedTheme = savedTheme ? JSON.parse(savedTheme) : 'dark';
+            const parsedTheme = savedTheme ? JSON.parse(savedTheme) : 'light';
             if (parsedTheme === 'light') {
               document.documentElement.classList.add('light');
             } else {

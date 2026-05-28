@@ -18,7 +18,8 @@ export default function ProductDetailPage() {
   const { addToCart, wishlist, toggleWishlist, addToCompare } = useStore();
 
   const [watch, setWatch] = useState<WatchProduct | undefined>(() => {
-    return products.find(p => p.id === watchId);
+    const decodedWatchId = decodeURIComponent(watchId).toLowerCase();
+    return products.find(p => decodeURIComponent(p.id).toLowerCase() === decodedWatchId);
   });
   
   useEffect(() => {
@@ -26,9 +27,18 @@ export default function ProductDetailPage() {
     if (local) {
       try {
         const list: WatchProduct[] = JSON.parse(local);
-        const found = list.find(p => p.id === watchId);
+        const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
+        const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
+        const decodedWatchId = decodeURIComponent(watchId).toLowerCase();
+        const found = list.find(p => decodeURIComponent(p.id).toLowerCase() === decodedWatchId);
         if (found) {
-          setWatch(found);
+          const cleanImg = isValidUrl(found.imageUrl) ? found.imageUrl.trim() : fallback;
+          const cleanImages = Array.isArray(found.images) ? found.images.filter(isValidUrl).map((img: string) => img.trim()) : [cleanImg];
+          setWatch({
+            ...found,
+            imageUrl: cleanImg,
+            images: cleanImages.length > 0 ? cleanImages : [cleanImg]
+          });
         }
       } catch (e) {
         console.error("Error parsing products in detail page", e);
@@ -145,7 +155,7 @@ Where time meets trust.`
               src={galleryImages[activeImageIndex]} 
               alt={`${watch.name} view ${activeImageIndex + 1}`} 
               fill
-              className="object-cover transition-all duration-500"
+              className="object-contain p-6 transition-all duration-500"
               priority
               sizes="(max-w-7xl) 50vw, 100vw"
             />
@@ -174,7 +184,7 @@ Where time meets trust.`
                   src={img} 
                   alt={`Thumbnail ${idx + 1}`} 
                   fill 
-                  className="object-cover" 
+                  className="object-contain p-2" 
                   sizes="120px"
                 />
               </button>
