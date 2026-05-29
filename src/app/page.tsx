@@ -599,7 +599,7 @@ function HomeContent() {
       )}
 
       {/* 2. HERO SECTION */}
-      <section className="dark-section relative min-h-[80vh] sm:h-[85vh] flex items-center justify-center overflow-hidden border-b border-zinc-900 bg-gradient-to-b from-[#080808] to-[#121212]">
+      <section className="dark-section relative min-h-[60vh] sm:h-[85vh] flex items-center justify-center overflow-hidden border-b border-zinc-900 bg-gradient-to-b from-[#080808] to-[#121212]">
         
         {/* WebGL/Canvas gear movement in the background */}
         <div className="absolute inset-0 z-0 pointer-events-none">
@@ -610,7 +610,7 @@ function HomeContent() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 h-96 w-96 rounded-full bg-primary-gold/5 blur-[120px] pointer-events-none" />
 
         {/* Hero text */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-5 sm:space-y-6 py-20">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-5 sm:space-y-6 py-12 sm:py-20">
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.4em] text-primary-gold animate-pulse-gold block">
             Haute Horlogerie Workshop
           </span>
@@ -642,7 +642,7 @@ function HomeContent() {
       </section>
 
       {/* 3A. GENTLEMEN'S LUXURY TIMEPIECES */}
-      <section id="men-section" className="py-24 bg-[#0A0A0A] border-b border-zinc-950">
+      <section id="men-section" className="py-12 sm:py-24 bg-[#0A0A0A] border-b border-zinc-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-12">
           
           {/* Header & Categories Menu */}
@@ -718,7 +718,7 @@ function HomeContent() {
       </section>
 
       {/* 3B. LADIES' DIAMOND & COMPLICATIONS */}
-      <section id="women-section" className="py-24 bg-[#080808] border-b border-zinc-950">
+      <section id="women-section" className="py-12 sm:py-24 bg-[#080808] border-b border-zinc-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-12">
           
           {/* Header & Categories Menu */}
@@ -794,7 +794,7 @@ function HomeContent() {
       </section>
 
       {/* 3C. MODERNIST HORIZON (KIDS) */}
-      <section id="kids-section" className="py-24 bg-[#0A0A0A] border-b border-zinc-950">
+      <section id="kids-section" className="py-12 sm:py-24 bg-[#0A0A0A] border-b border-zinc-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-12">
           
           {/* Header & Categories Menu */}

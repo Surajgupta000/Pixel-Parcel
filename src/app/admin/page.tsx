@@ -166,7 +166,19 @@ export default function AdminPage() {
 
   const isGenderChecked = (genderVal: string) => {
     if (!formWatch.gender) return false;
-    return formWatch.gender.split(/[,;\s]+/).map(g => g.trim().toLowerCase()).includes(genderVal.toLowerCase());
+    const parts = formWatch.gender.split(/[,;\s]+/).map(g => g.trim().toLowerCase()).filter(Boolean);
+    const target = genderVal.toLowerCase();
+    
+    if (target === "men") {
+      return parts.some(p => ["guys", "men", "gentlemen", "mens", "unisex"].includes(p));
+    }
+    if (target === "women") {
+      return parts.some(p => ["ladies", "women", "womens", "unisex"].includes(p));
+    }
+    if (target === "kids") {
+      return parts.some(p => ["kids", "boys", "girls", "children"].includes(p));
+    }
+    return false;
   };
 
   const handleGenderCheckboxChange = (genderVal: string, checked: boolean) => {
@@ -174,14 +186,23 @@ export default function AdminPage() {
       ? formWatch.gender.split(/[,;\s]+/).map(g => g.trim()).filter(Boolean) 
       : [];
     
-    const matchVal = genderVal.charAt(0).toUpperCase() + genderVal.slice(1).toLowerCase();
+    const target = genderVal.toLowerCase();
 
     if (checked) {
-      if (!currentGenders.includes(matchVal)) {
+      const matchVal = genderVal.charAt(0).toUpperCase() + genderVal.slice(1).toLowerCase();
+      if (!isGenderChecked(genderVal)) {
         currentGenders.push(matchVal);
       }
     } else {
-      currentGenders = currentGenders.filter(g => g.toLowerCase() !== genderVal.toLowerCase());
+      if (target === "men") {
+        currentGenders = currentGenders.filter(g => !["guys", "men", "gentlemen", "mens"].includes(g.toLowerCase()));
+      } else if (target === "women") {
+        currentGenders = currentGenders.filter(g => !["ladies", "women", "womens"].includes(g.toLowerCase()));
+      } else if (target === "kids") {
+        currentGenders = currentGenders.filter(g => !["kids", "boys", "girls", "children"].includes(g.toLowerCase()));
+      } else {
+        currentGenders = currentGenders.filter(g => g.toLowerCase() !== target);
+      }
     }
 
     setFormWatch({
