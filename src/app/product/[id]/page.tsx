@@ -17,10 +17,8 @@ export default function ProductDetailPage() {
   const watchId = params.id as string;
   const { addToCart, wishlist, toggleWishlist, addToCompare } = useStore();
 
-  const [watch, setWatch] = useState<WatchProduct | undefined>(() => {
-    const decodedWatchId = decodeURIComponent(watchId).toLowerCase();
-    return products.find(p => decodeURIComponent(p.id).toLowerCase() === decodedWatchId);
-  });
+  const [watch, setWatch] = useState<WatchProduct | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     const loadProduct = async () => {
@@ -40,6 +38,7 @@ export default function ProductDetailPage() {
               imageUrl: cleanImg,
               images: cleanImages.length > 0 ? cleanImages : [cleanImg]
             });
+            setLoading(false);
             return;
           }
         }
@@ -52,7 +51,7 @@ export default function ProductDetailPage() {
         try {
           const list: WatchProduct[] = JSON.parse(local);
           const isValidUrl = (url: any) => typeof url === "string" && (url.trim().startsWith("http://") || url.trim().startsWith("https://") || url.trim().startsWith("/"));
-          const fallback = "https://images.unsplash.com/photo-1547996160-81dfa63595aa?q=80&w=1000";
+          const fallback = "https://images.unsplash.com/photo-1547996160-81dfa53595aa?q=80&w=1000";
           const decoded = decodeURIComponent(watchId).toLowerCase();
           const found = list.find(p => decodeURIComponent(p.id).toLowerCase() === decoded);
           if (found) {
@@ -68,6 +67,7 @@ export default function ProductDetailPage() {
           console.error("Error parsing products in detail page from localStorage", e);
         }
       }
+      setLoading(false);
     };
 
     loadProduct();
@@ -80,11 +80,20 @@ export default function ProductDetailPage() {
   const [showCertificate, setShowCertificate] = useState(false);
   const [isCertificateDownloaded, setIsCertificateDownloaded] = useState(false);
 
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-24 text-center flex-grow flex flex-col justify-center items-center">
+        <div className="w-16 h-16 border-4 border-primary-gold border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-zinc-550 font-mono tracking-widest uppercase text-xs">Opening archive vault...</p>
+      </div>
+    );
+  }
+
   if (!watch) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-24 text-center space-y-6 flex-grow flex flex-col justify-center">
         <h2 className="text-3xl font-serif text-white uppercase">Timepiece Not Found</h2>
-        <p className="text-zinc-500 text-sm max-w-sm mx-auto">The requested caliber does not exist in our historical archive.</p>
+        <p className="text-zinc-550 text-sm max-w-sm mx-auto">The requested caliber does not exist in our historical archive.</p>
         <Link 
           href="/shop" 
           className="px-6 py-2.5 bg-primary-gold hover:bg-gold-light text-black text-xs font-bold uppercase tracking-widest transition-colors rounded inline-block w-fit mx-auto"
@@ -113,6 +122,15 @@ export default function ProductDetailPage() {
     setEngravingText("");
     setShowEngraving(false);
     setQty(1);
+  };
+
+  const handleBuyNow = () => {
+    const text = showEngraving ? engravingText : undefined;
+    addToCart(watch, qty, text);
+    setEngravingText("");
+    setShowEngraving(false);
+    setQty(1);
+    router.push("/checkout");
   };
 
   const handleDownloadCertificate = () => {
@@ -300,34 +318,43 @@ Where time meets trust.`
             )}
           </div>
 
-          {/* Quantity and Cart button */}
+          {/* Quantity and Cart buttons */}
           <div className="flex gap-4 items-end pt-4">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 flex-shrink-0">
               <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500">Qty</label>
-              <div className="flex items-center border border-zinc-900 rounded bg-[#070707] h-11 px-3">
+              <div className="flex items-center border border-zinc-900 rounded bg-[#070707] h-11 px-3 w-[100px] justify-between">
                 <button 
                   onClick={() => setQty(prev => Math.max(1, prev - 1))}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors text-lg"
                 >
                   -
                 </button>
-                <span className="px-4 text-xs font-mono text-white">{qty}</span>
+                <span className="px-2 text-xs font-mono text-white">{qty}</span>
                 <button 
                   onClick={() => setQty(prev => prev + 1)}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors text-lg"
                 >
                   +
                 </button>
               </div>
             </div>
 
-            <button 
-              onClick={handleAddToCart}
-              className="flex-grow h-11 bg-primary-gold hover:bg-gold-light text-black text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 rounded shadow-lg shadow-primary-gold/5"
-            >
-              <ShoppingCart className="h-4.5 w-4.5" />
-              Acquire Timepiece
-            </button>
+            <div className="flex flex-row flex-grow gap-3">
+              <button 
+                onClick={handleAddToCart}
+                className="flex-1 h-11 bg-transparent hover:bg-zinc-900 text-primary-gold border border-primary-gold text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest transition-colors flex items-center justify-center gap-1.5 sm:gap-2 rounded transition-all duration-300"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                Add to Cart
+              </button>
+
+              <button 
+                onClick={handleBuyNow}
+                className="flex-1 h-11 bg-primary-gold hover:bg-gold-light text-black text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest transition-colors flex items-center justify-center gap-1.5 sm:gap-2 rounded shadow-lg shadow-primary-gold/5 transition-all duration-300"
+              >
+                Buy Now
+              </button>
+            </div>
           </div>
 
           {/* Authenticity Certificate button */}

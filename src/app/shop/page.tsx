@@ -15,7 +15,8 @@ function ShopContent() {
   const searchParams = useSearchParams();
 
   // Load products dynamically
-  const [productsList, setProductsList] = useState<WatchProduct[]>(products);
+  const [productsList, setProductsList] = useState<WatchProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -24,6 +25,7 @@ function ShopContent() {
           const data = await res.json();
           setProductsList(data);
           localStorage.setItem("pp_products", JSON.stringify(data));
+          setLoading(false);
           return;
         }
       } catch (err) {
@@ -50,6 +52,7 @@ function ShopContent() {
           console.error("Error loading products on shop page from localStorage", e);
         }
       }
+      setLoading(false);
     };
 
     loadProducts();
@@ -397,7 +400,11 @@ function ShopContent() {
           {/* Sorting / Results bar */}
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center bg-[#0E0E0E] border border-zinc-900 rounded-lg px-4 sm:px-6 py-3 text-xs text-zinc-450">
             <span className="text-zinc-400">
-              Showing <span className="text-white font-bold">{sortedProducts.length}</span> watch models
+              {loading ? (
+                "Scanning vault registry..."
+              ) : (
+                <>Showing <span className="text-white font-bold">{sortedProducts.length}</span> watch models</>
+              )}
             </span>
             <div className="flex items-center gap-2 self-start sm:self-auto">
               <label className="text-zinc-500 uppercase tracking-widest text-[9px] font-bold whitespace-nowrap">Sort By</label>
@@ -415,7 +422,12 @@ function ShopContent() {
           </div>
 
           {/* Watch Grid */}
-          {sortedProducts.length === 0 ? (
+          {loading ? (
+            <div className="py-20 text-center space-y-4 flex flex-col items-center justify-center">
+              <div className="w-12 h-12 border-4 border-primary-gold border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-zinc-550 font-mono tracking-widest uppercase text-xs">Opening The vault...</p>
+            </div>
+          ) : sortedProducts.length === 0 ? (
             <div className="border border-dashed border-zinc-850 rounded-lg py-20 text-center space-y-4">
               <p className="text-sm text-zinc-500">No timepieces match your current selection parameters.</p>
               <button

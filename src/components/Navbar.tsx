@@ -203,7 +203,7 @@ export default function Navbar() {
             <div className="space-y-1">
               <div className="flex items-center justify-between py-2">
                 <Link 
-                  href="/shop?gender=men" 
+                  href="/?section=men" 
                   onClick={() => setMobileMenuOpen(false)}
                   className="hover:text-white text-zinc-300 font-bold"
                 >
@@ -223,7 +223,7 @@ export default function Navbar() {
                   {["Casual", "Formal", "Digital", "Smart"].map(style => (
                     <Link
                       key={style}
-                      href={`/shop?gender=men&style=${style}`}
+                      href={`/?section=men&style=${style}`}
                       onClick={() => setMobileMenuOpen(false)}
                       className="text-[11px] text-zinc-500 hover:text-primary-gold transition-colors py-1 normal-case font-medium tracking-wide"
                     >
@@ -238,7 +238,7 @@ export default function Navbar() {
             <div className="space-y-1 mt-2">
               <div className="flex items-center justify-between py-2">
                 <Link 
-                  href="/shop?gender=women" 
+                  href="/?section=women" 
                   onClick={() => setMobileMenuOpen(false)}
                   className="hover:text-white text-zinc-300 font-bold"
                 >
@@ -258,7 +258,7 @@ export default function Navbar() {
                   {["Casual", "Formal", "Digital", "Smart"].map(style => (
                     <Link
                       key={style}
-                      href={`/shop?gender=women&style=${style}`}
+                      href={`/?section=women&style=${style}`}
                       onClick={() => setMobileMenuOpen(false)}
                       className="text-[11px] text-zinc-500 hover:text-primary-gold transition-colors py-1 normal-case font-medium tracking-wide"
                     >
@@ -272,7 +272,7 @@ export default function Navbar() {
             {/* Kids Category */}
             <div className="py-2 mt-2">
               <Link 
-                href="/shop?gender=kids" 
+                href="/?section=kids" 
                 onClick={() => setMobileMenuOpen(false)}
                 className="hover:text-white text-zinc-300 font-bold block"
               >

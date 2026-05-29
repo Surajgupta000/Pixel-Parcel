@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useStore } from "@/store/useStore";
@@ -206,9 +207,10 @@ function ProductCard({ watch, wishlist, toggleWishlist, addToCompare, addToCart 
   );
 }
 
-export default function HomePage() {
+function HomeContent() {
   const { addToCart, wishlist, toggleWishlist, addToCompare } = useStore();
-  const [productsList, setProductsList] = useState<WatchProduct[]>(products);
+  const [productsList, setProductsList] = useState<WatchProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -217,6 +219,7 @@ export default function HomePage() {
           const data = await res.json();
           setProductsList(data);
           localStorage.setItem("pp_products", JSON.stringify(data));
+          setLoading(false);
           return;
         }
       } catch (err) {
@@ -243,6 +246,7 @@ export default function HomePage() {
           console.error("Error loading products on homepage from localStorage", e);
         }
       }
+      setLoading(false);
     };
 
     loadProducts();
@@ -257,6 +261,47 @@ export default function HomePage() {
   const [kidsActiveSub, setKidsActiveSub] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const section = searchParams.get("section");
+    const style = searchParams.get("style");
+
+    if (section) {
+      const element = document.getElementById(`${section.toLowerCase()}-section`);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
+
+      if (section === "men") {
+        setMenActiveSection(0);
+        if (style) {
+          const sIdx = ["Casual", "Formal", "Digital", "Smart"].findIndex(
+            (s) => s.toLowerCase() === style.toLowerCase()
+          );
+          if (sIdx !== -1) setMenActiveSub(sIdx);
+        } else {
+          setMenActiveSub(null);
+        }
+      } else if (section === "women") {
+        setWomenActiveSection(0);
+        if (style) {
+          const sIdx = ["Casual", "Formal", "Digital", "Smart"].findIndex(
+            (s) => s.toLowerCase() === style.toLowerCase()
+          );
+          if (sIdx !== -1) setWomenActiveSub(sIdx);
+        } else {
+          setWomenActiveSub(null);
+        }
+      } else if (section === "kids") {
+        setKidsActiveSection(0);
+        setKidsActiveSub(null);
+      }
+    }
+  }, [searchParams]);
 
   // Auto-slide testimonials every 5 seconds
   useEffect(() => {
@@ -597,11 +642,11 @@ export default function HomePage() {
       </section>
 
       {/* 3A. GENTLEMEN'S LUXURY TIMEPIECES */}
-      <section className="py-24 bg-[#0A0A0A] border-b border-zinc-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section id="men-section" className="py-24 bg-[#0A0A0A] border-b border-zinc-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-12">
           
           {/* Header & Categories Menu */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-4 border-b border-zinc-900">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-6 pb-3 sm:pb-4 border-b border-zinc-900">
             <div className="space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-gold block">Gentlemen&apos;s Calibers</span>
               <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-white tracking-wide">The Men&apos;s Collection</h3>
@@ -654,8 +699,13 @@ export default function HomePage() {
           )}
 
           {/* Product grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px]">
-            {displayMenProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px] lg:justify-start justify-center items-center">
+            {loading ? (
+              <div className="w-full flex flex-col items-center justify-center py-16">
+                <div className="w-12 h-12 border-4 border-primary-gold border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-zinc-550 font-mono tracking-widest uppercase text-xs">Loading calibers...</p>
+              </div>
+            ) : displayMenProducts.length > 0 ? (
               displayMenProducts.map((watch) => renderWatchCard(watch))
             ) : (
               <div className="w-full flex flex-col items-center justify-center py-16 text-zinc-500 text-sm italic">
@@ -668,11 +718,11 @@ export default function HomePage() {
       </section>
 
       {/* 3B. LADIES' DIAMOND & COMPLICATIONS */}
-      <section className="py-24 bg-[#080808] border-b border-zinc-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section id="women-section" className="py-24 bg-[#080808] border-b border-zinc-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-12">
           
           {/* Header & Categories Menu */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-4 border-b border-zinc-900">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-6 pb-3 sm:pb-4 border-b border-zinc-900">
             <div className="space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-gold block">Ladies&apos; Diamond &amp; Complications</span>
               <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-white tracking-wide">The Women&apos;s Collection</h3>
@@ -725,8 +775,13 @@ export default function HomePage() {
           )}
 
           {/* Product grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px]">
-            {displayWomenProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px] lg:justify-start justify-center items-center">
+            {loading ? (
+              <div className="w-full flex flex-col items-center justify-center py-16">
+                <div className="w-12 h-12 border-4 border-primary-gold border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-zinc-550 font-mono tracking-widest uppercase text-xs">Loading calibers...</p>
+              </div>
+            ) : displayWomenProducts.length > 0 ? (
               displayWomenProducts.map((watch) => renderWatchCard(watch))
             ) : (
               <div className="w-full flex flex-col items-center justify-center py-16 text-zinc-500 text-sm italic">
@@ -739,11 +794,11 @@ export default function HomePage() {
       </section>
 
       {/* 3C. MODERNIST HORIZON (KIDS) */}
-      <section className="py-24 bg-[#0A0A0A] border-b border-zinc-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section id="kids-section" className="py-24 bg-[#0A0A0A] border-b border-zinc-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-12">
           
           {/* Header & Categories Menu */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-4 border-b border-zinc-900">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-6 pb-3 sm:pb-4 border-b border-zinc-900">
             <div className="space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary-gold block">Youth Calibers</span>
               <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-white tracking-wide">The Kids Collection</h3>
@@ -775,29 +830,15 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Sub-Category Bar */}
-          {homeSections[kidsActiveSection].subCategories.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-center lg:justify-start animate-fade-in">
-              {homeSections[kidsActiveSection].subCategories.map((sub, sIdx) => (
-                <button
-                  key={sub.name}
-                  onMouseEnter={() => setKidsActiveSub(sIdx)}
-                  onClick={() => setKidsActiveSub(sIdx)}
-                  className={`px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded-full border transition-all duration-300 ${
-                    kidsActiveSub === sIdx
-                      ? "border-primary-gold bg-primary-gold/15 text-primary-gold"
-                      : "border-zinc-900 bg-transparent text-zinc-500 hover:text-zinc-350 hover:border-zinc-800"
-                  }`}
-                >
-                  {sub.name}
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* Product grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px]">
-            {displayKidsProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:scrollbar-none lg:gap-8 lg:pb-4 min-h-[420px] lg:justify-start justify-center items-center">
+            {loading ? (
+              <div className="w-full flex flex-col items-center justify-center py-16">
+                <div className="w-12 h-12 border-4 border-primary-gold border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-zinc-550 font-mono tracking-widest uppercase text-xs">Loading calibers...</p>
+              </div>
+            ) : displayKidsProducts.length > 0 ? (
               displayKidsProducts.map((watch) => renderWatchCard(watch))
             ) : (
               <div className="w-full flex flex-col items-center justify-center py-16 text-zinc-500 text-sm italic">
@@ -1066,5 +1107,17 @@ export default function HomePage() {
       */}
 
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary-gold border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

@@ -59,11 +59,11 @@ export default function CartDrawer() {
       />
 
       {/* Slide-out panel */}
-      <div className="absolute inset-y-0 right-0 pl-10 max-w-full flex">
+      <div className="absolute inset-y-0 right-0 pl-0 sm:pl-10 max-w-full flex">
         <div className="w-screen max-w-md bg-[#0D0D0D] border-l border-zinc-800 shadow-2xl flex flex-col h-full">
           
           {/* Header */}
-          <div className="px-6 py-5 border-b border-zinc-850 flex items-center justify-between">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-zinc-850 flex items-center justify-between">
             <h2 className="text-xl font-serif text-white tracking-wide">Your Vault ({cart.length})</h2>
             <button 
               onClick={() => setCartOpen(false)}
@@ -74,7 +74,7 @@ export default function CartDrawer() {
           </div>
 
           {/* Cart Items List */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 divide-y divide-zinc-900 scrollbar-none">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 divide-y divide-zinc-900 scrollbar-none">
             {cart.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-20">
                 <div className="border border-dashed border-zinc-800 p-6 rounded-full mb-4 text-zinc-600">
@@ -162,7 +162,7 @@ export default function CartDrawer() {
 
           {/* Cart Checkout Summary Panel */}
           {cart.length > 0 && (
-            <div className="border-t border-zinc-850 bg-zinc-950/70 p-6 space-y-4">
+            <div className="border-t border-zinc-850 bg-zinc-950/70 p-4 sm:p-6 space-y-4">
               
               {/* Coupon Form */}
               {!appliedCoupon ? (
