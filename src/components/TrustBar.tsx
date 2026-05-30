@@ -17,7 +17,7 @@ export default function TrustBar() {
           </div>
           <div className="flex items-center gap-2 mx-auto sm:mx-0">
             <RotateCcw className="h-3.5 w-3.5 text-primary-gold" />
-            <span className="text-zinc-300">7-Day Easy Returns</span>
+            <span className="text-zinc-300">7-Day Easy Exchange</span>
           </div>
           <div className="hidden sm:flex items-center gap-2 mx-auto sm:mx-0">
             <Box className="h-3.5 w-3.5 text-primary-gold" />

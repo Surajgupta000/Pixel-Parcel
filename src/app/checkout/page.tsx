@@ -17,6 +17,7 @@ export default function CheckoutPage() {
     email: "",
     phone: "",
     address: "",
+    address2: "",
     city: "",
     state: "",
     zip: "",
@@ -253,7 +254,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Street Address</label>
+            <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Address Line 1</label>
             <input 
               type="text" 
               name="address"
@@ -261,6 +262,18 @@ export default function CheckoutPage() {
               value={formData.address}
               onChange={handleInputChange}
               placeholder="Suite 404, Horology Crescent"
+              className="w-full bg-[#0E0E0E] border border-zinc-900 text-zinc-300 text-xs px-3 py-2.5 rounded focus:outline-none focus:border-primary-gold"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Address Line 2 (Apartment, suite, unit, building, floor, etc.)</label>
+            <input 
+              type="text" 
+              name="address2"
+              value={formData.address2}
+              onChange={handleInputChange}
+              placeholder="Floor 4, Apartment 4B"
               className="w-full bg-[#0E0E0E] border border-zinc-900 text-zinc-300 text-xs px-3 py-2.5 rounded focus:outline-none focus:border-primary-gold"
             />
           </div>
